@@ -51,7 +51,7 @@
       <button onclick="switchTab('standings')" id="tab-btn-standings" class="tab-link pb-3 border-b-2 border-emerald-400 text-emerald-400">🏆 Leaderboards</button>
       <button onclick="switchTab('matches')" id="tab-btn-matches" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🎾 Group Matches</button>
       <button onclick="switchTab('playoffs')" id="tab-btn-playoffs" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🥇 Mixed Playoffs</button>
-      <button onclick="switchTab('names')" id="tab-btn-names" class="tab-link hidden pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">✏️ Edit Names</button>
+      <button onclick="switchTab('names')" id="tab-btn-names" class="tab-link hidden pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">✏️ Players &amp; Skills</button>
     </div>
 
     <section id="tab-standings" class="tab-content space-y-6">
@@ -131,8 +131,8 @@
     <section id="tab-names" class="tab-content hidden space-y-6">
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
         <div class="border-b border-slate-700/60 pb-3">
-          <h2 class="text-lg font-bold text-white">✏️ Edit Participant Names</h2>
-          <p class="text-xs text-slate-400 mt-1">Changes save automatically and update on everyone's phone.</p>
+          <h2 class="text-lg font-bold text-white">✏️ Players &amp; Skill Levels</h2>
+          <p class="text-xs text-slate-400 mt-1">Names and skill levels save automatically. After changing skills, tap “Generate balanced schedule” so matches are re-balanced.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
@@ -144,6 +144,21 @@
             <div id="names-women" class="space-y-2"></div>
           </div>
         </div>
+        <div class="border-t border-slate-700/60 pt-4 space-y-3">
+          <h3 class="text-sm font-bold text-amber-400">⚖️ Balanced Schedule</h3>
+          <p class="text-xs text-slate-400">Teams are built so both sides have a similar total skill (e.g. Advanced + Low-Inter vs High-Inter + High-Inter). Everyone plays the same number of games, rests equally, and gets new partners every round.</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="rounds-select" onchange="updateRoundsHint()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+              <option value="6">6 rounds (4 games each)</option>
+              <option value="7">7 rounds (4 games each)</option>
+              <option value="8">8 rounds (6 games each)</option>
+              <option value="9">9 rounds (6 games each)</option>
+            </select>
+            <button onclick="generateSchedules()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">⚖️ Generate balanced schedule</button>
+          </div>
+          <p id="rounds-hint" class="text-[11px] text-slate-400"></p>
+          <p class="text-[11px] text-rose-300">Generating a new schedule clears all current scores.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -153,7 +168,7 @@
       <button onclick="switchTab('standings')" id="mob-btn-standings" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-emerald-400"><span class="text-lg">🏆</span><span class="text-[10px] font-bold">Standings</span></button>
       <button onclick="switchTab('matches')" id="mob-btn-matches" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">🎾</span><span class="text-[10px] font-bold">Matches</span></button>
       <button onclick="switchTab('playoffs')" id="mob-btn-playoffs" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">🥇</span><span class="text-[10px] font-bold">Playoffs</span></button>
-      <button onclick="switchTab('names')" id="mob-btn-names" class="mob-link hidden py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">✏️</span><span class="text-[10px] font-bold">Names</span></button>
+      <button onclick="switchTab('names')" id="mob-btn-names" class="mob-link hidden py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">✏️</span><span class="text-[10px] font-bold">Players</span></button>
     </div>
   </nav>
 
@@ -203,17 +218,46 @@
     let mensPlayers = DEFAULT_MEN.slice();
     let womensPlayers = DEFAULT_WOMEN.slice();
 
-    const defaultRoundRobin = [
-      [ {t1: [0, 1], t2: [2, 3]}, {t1: [4, 5], t2: [6, 7]} ],
-      [ {t1: [0, 2], t2: [4, 6]}, {t1: [1, 8], t2: [3, 9]} ],
-      [ {t1: [0, 3], t2: [5, 8]}, {t1: [2, 7], t2: [4, 9]} ],
-      [ {t1: [0, 4], t2: [1, 7]}, {t1: [3, 6], t2: [5, 9]} ],
-      [ {t1: [0, 5], t2: [3, 8]}, {t1: [1, 9], t2: [2, 6]} ],
-      [ {t1: [0, 6], t2: [1, 5]}, {t1: [4, 7], t2: [8, 9]} ],
-      [ {t1: [0, 7], t2: [6, 8]}, {t1: [2, 9], t2: [3, 5]} ],
-      [ {t1: [0, 8], t2: [2, 4]}, {t1: [1, 6], t2: [7, 9]} ],
-      [ {t1: [0, 9], t2: [1, 3]}, {t1: [5, 7], t2: [6, 8]} ]
+    const BASE_ROUNDS = [
+      [ {t1: [5, 7], t2: [0, 3]}, {t1: [2, 4], t2: [1, 8]} ],
+      [ {t1: [5, 8], t2: [4, 7]}, {t1: [6, 9], t2: [1, 2]} ],
+      [ {t1: [0, 6], t2: [4, 5]}, {t1: [3, 7], t2: [2, 8]} ],
+      [ {t1: [4, 6], t2: [1, 3]}, {t1: [2, 5], t2: [0, 9]} ],
+      [ {t1: [7, 9], t2: [2, 3]}, {t1: [1, 4], t2: [0, 8]} ],
+      [ {t1: [0, 2], t2: [6, 7]}, {t1: [8, 9], t2: [1, 5]} ],
+      [ {t1: [1, 9], t2: [7, 8]}, {t1: [0, 4], t2: [3, 6]} ],
+      [ {t1: [0, 1], t2: [2, 9]}, {t1: [5, 6], t2: [3, 8]} ],
+      [ {t1: [3, 4], t2: [0, 7]}, {t1: [5, 9], t2: [1, 6]} ],
+      [ {t1: [3, 5], t2: [4, 9]}, {t1: [2, 7], t2: [6, 8]} ]
     ];
+    // Players sitting out each round (everyone rests exactly twice)
+    const BASE_RESTS = [
+      [6, 9],
+      [0, 3],
+      [1, 9],
+      [7, 8],
+      [5, 6],
+      [3, 4],
+      [2, 5],
+      [4, 7],
+      [2, 8],
+      [0, 1]
+    ];
+
+    const DEFAULT_SCHED = BASE_ROUNDS.map((ms, i) => ({ m: ms, rest: BASE_RESTS[i] }));
+    let SCHED = { m: DEFAULT_SCHED, w: DEFAULT_SCHED };
+    let SCHED_SKILLS = null; // skill levels the current schedule was built for
+    let generating = false;
+    let mensSkill = Array(10).fill(3);
+    let womensSkill = Array(10).fill(3);
+    const SKILLS = {
+      1: { label: 'Beginner',   tag: 'BEG',  cls: 'bg-slate-500/30 text-slate-300' },
+      2: { label: 'Low-Inter',  tag: 'LOW',  cls: 'bg-sky-500/25 text-sky-300' },
+      3: { label: 'High-Inter', tag: 'HIGH', cls: 'bg-amber-500/25 text-amber-300' },
+      4: { label: 'Advanced',   tag: 'ADV',  cls: 'bg-rose-500/25 text-rose-300' }
+    };
+    const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const skillTag = lvl => { if (currentMode !== 'scorekeeper') return ''; const k = SKILLS[lvl] || SKILLS[3]; return `<span class="ml-1 text-[9px] px-1 rounded font-bold ${k.cls}">${k.tag}</span>`; };
 
     const CLOUD = !!FIREBASE_URL;
     let currentMode = 'spectator';
@@ -231,41 +275,44 @@
       return 'plain:' + text;
     }
 
-    function setSync(ok) {
+    function setSync(ok, msg) {
       const dot = document.getElementById('sync-dot');
       dot.className = 'w-2 h-2 rounded-full ' + (ok === true ? 'bg-emerald-400' : ok === false ? 'bg-rose-500' : 'bg-slate-500');
-      dot.title = ok === true ? 'Live' : ok === false ? 'Connection problem' : 'Local only';
+      dot.title = ok === true ? 'Live' : ok === false ? ('Connection problem' + (msg ? ': ' + msg : '')) : 'Local only';
     }
 
     async function loadData() {
       if (!CLOUD) {
-        matchScores = JSON.parse(localStorage.getItem('pb_scores') || '{}');
+        matchScores = JSON.parse(localStorage.getItem('pb_scores_v2') || '{}');
         pinHash = localStorage.getItem('pb_pin_hash');
         applyNames(JSON.parse(localStorage.getItem('pb_names') || 'null'));
+        applySchedule(JSON.parse(localStorage.getItem('pb_schedule') || 'null'));
         setSync(null);
         return;
       }
       try {
-        const [sRes, pRes, nRes] = await Promise.all([
-          fetch(`${FIREBASE_URL}/scores.json`, {cache: 'no-store'}),
+        const [sRes, pRes, nRes, schRes] = await Promise.all([
+          fetch(`${FIREBASE_URL}/scores_v2.json`, {cache: 'no-store'}),
           fetch(`${FIREBASE_URL}/pin.json`, {cache: 'no-store'}),
-          fetch(`${FIREBASE_URL}/names.json`, {cache: 'no-store'})
+          fetch(`${FIREBASE_URL}/names.json`, {cache: 'no-store'}),
+          fetch(`${FIREBASE_URL}/schedule.json`, {cache: 'no-store'})
         ]);
-        if (!sRes.ok || !pRes.ok || !nRes.ok) throw new Error('bad response');
+        if (!sRes.ok || !pRes.ok || !nRes.ok || !schRes.ok) throw new Error('bad response');
         matchScores = (await sRes.json()) || {};
         pinHash = (await pRes.json()) || null;
         applyNames(await nRes.json());
+        applySchedule(await schRes.json());
         setSync(true);
       } catch (e) {
-        setSync(false);
+        setSync(false, e.message);
       }
     }
 
     async function writeScore(key, s1, s2) {
       matchScores[key] = { s1, s2 };
-      if (!CLOUD) { localStorage.setItem('pb_scores', JSON.stringify(matchScores)); return true; }
+      if (!CLOUD) { localStorage.setItem('pb_scores_v2', JSON.stringify(matchScores)); return true; }
       try {
-        const r = await fetch(`${FIREBASE_URL}/scores/${key}.json`, {
+        const r = await fetch(`${FIREBASE_URL}/scores_v2/${key}.json`, {
           method: 'PUT', body: JSON.stringify({ s1, s2 })
         });
         if (!r.ok) throw new Error();
@@ -274,14 +321,57 @@
       } catch (e) { setSync(false); return false; }
     }
 
+    async function clearScores(keys) {
+      keys.forEach(k => delete matchScores[k]);
+      if (!CLOUD) { localStorage.setItem('pb_scores_v2', JSON.stringify(matchScores)); return true; }
+      try {
+        const rs = await Promise.all(keys.map(k => fetch(`${FIREBASE_URL}/scores_v2/${k}.json`, { method: 'PUT', body: 'null' })));
+        if (rs.some(r => !r.ok)) throw new Error('HTTP error');
+        setSync(true);
+        return true;
+      } catch (e) { setSync(false); return false; }
+    }
+
+    async function resetRound() {
+      if (currentMode !== 'scorekeeper') return;
+      if (!confirm(`Reset all scores for Round ${currentRoundIndex + 1}? This cannot be undone.`)) return;
+      const keys = [];
+      ['m', 'w'].forEach(g => SCHED[g][currentRoundIndex].m.forEach((_, i) => keys.push(`${g}_r${currentRoundIndex}_m${i}`)));
+      const ok = await clearScores(keys);
+      renderMatches(); renderStandings(); renderPlayoffs();
+      showToast(ok ? `✓ Round ${currentRoundIndex + 1} reset` : 'Reset failed — check connection', !ok);
+    }
+
     function applyNames(data) {
       const fix = (arr, def) => def.map((d, i) => (arr && typeof arr[i] === 'string' && arr[i].trim()) ? arr[i].trim() : d);
       mensPlayers = fix(data && data.men, DEFAULT_MEN);
       womensPlayers = fix(data && data.women, DEFAULT_WOMEN);
+      const fixS = arr => Array.from({length: 10}, (_, i) => (arr && [1,2,3,4].includes(Number(arr[i]))) ? Number(arr[i]) : 3);
+      mensSkill = fixS(data && data.menSkill);
+      womensSkill = fixS(data && data.womenSkill);
+    }
+
+    function applySchedule(data) {
+      const ok = d => Array.isArray(d) && d.length > 0 && d.every(r => r && Array.isArray(r.rest) && Array.isArray(r.m) && r.m.length >= 1 && r.m.length <= 2);
+      if (data && ok(data.m) && ok(data.w) && data.m.length === data.w.length) {
+        SCHED = { m: data.m, w: data.w };
+        const sk = data.skills;
+        SCHED_SKILLS = (sk && sk.m && sk.w) ? { m: Array.from({length: 10}, (_, i) => Number(sk.m[i])), w: Array.from({length: 10}, (_, i) => Number(sk.w[i])) } : null;
+      } else { SCHED = { m: DEFAULT_SCHED, w: DEFAULT_SCHED }; SCHED_SKILLS = null; }
+    }
+
+    function scheduleStale() {
+      if (!SCHED_SKILLS) return true;
+      return mensSkill.some((v, i) => v !== SCHED_SKILLS.m[i]) || womensSkill.some((v, i) => v !== SCHED_SKILLS.w[i]);
+    }
+
+    function syncRoundButtons() {
+      if (currentRoundIndex >= SCHED.m.length) currentRoundIndex = 0;
+      if (document.querySelectorAll('.round-btn').length !== SCHED.m.length) buildRoundButtons();
     }
 
     async function writeNames() {
-      const data = { men: mensPlayers, women: womensPlayers };
+      const data = { men: mensPlayers, women: womensPlayers, menSkill: mensSkill, womenSkill: womensSkill };
       if (!CLOUD) { localStorage.setItem('pb_names', JSON.stringify(data)); return true; }
       try {
         const r = await fetch(`${FIREBASE_URL}/names.json`, { method: 'PUT', body: JSON.stringify(data) });
@@ -306,6 +396,7 @@
       buildRoundButtons();
       if (!CLOUD) document.getElementById('offline-banner').classList.remove('hidden');
       await loadData();
+      syncRoundButtons();
       applyModeUI();
       renderStandings();
       renderMatches();
@@ -315,16 +406,18 @@
     }
 
     async function pollRefresh() {
-      if (document.hidden) return;
+      if (document.hidden || generating) return;
       await loadData();
+      if (generating) return;
+      syncRoundButtons();
       renderStandings();
       // Don't wipe inputs while the scorekeeper is typing
       if (currentMode === 'spectator') { renderMatches(); renderPlayoffs(); }
     }
 
     function buildRoundButtons() {
-      document.getElementById('round-buttons').innerHTML = defaultRoundRobin.map((_, i) =>
-        `<button onclick="selectRound(${i})" class="round-btn px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${i === 0 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">R${i + 1}</button>`
+      document.getElementById('round-buttons').innerHTML = SCHED.m.map((_, i) =>
+        `<button onclick="selectRound(${i})" class="round-btn px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${i === currentRoundIndex ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">R${i + 1}</button>`
       ).join('');
     }
 
@@ -345,6 +438,7 @@
         pinBtn.classList.remove('hidden');
         setNamesTabVisible(true);
       }
+      renderStandings(); // show/hide skill tags
     }
 
     function setNamesTabVisible(show) {
@@ -413,7 +507,7 @@
           currentMode = 'scorekeeper';
           applyModeUI(); renderMatches(); renderPlayoffs();
           closeAuthModal();
-          showToast('Unlocked Scorekeeper Mode!');
+          renderNamesEditor(); showToast('Unlocked Scorekeeper Mode!');
         } else {
           showPinError('Incorrect PIN.');
         }
@@ -422,27 +516,176 @@
 
     // ---------- names editor ----------
     function renderNamesEditor() {
-      const build = (id, arr, g) => {
+      const build = (id, arr, skills, g) => {
         document.getElementById(id).innerHTML = arr.map((n, i) =>
           `<div class="flex items-center gap-2"><span class="w-6 text-xs font-mono text-slate-500">${i + 1}</span>
-           <input type="text" id="name_${g}_${i}" value="${n.replace(/"/g, '&quot;')}" maxlength="20" oninput="onNameInput()"
-             class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></div>`).join('');
+           <input type="text" id="name_${g}_${i}" value="${esc(n)}" maxlength="20" oninput="onNameInput()"
+             class="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+           <select id="skill_${g}_${i}" onchange="onNameInput()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+             ${[1,2,3,4].map(l => `<option value="${l}" ${skills[i] === l ? 'selected' : ''}>${SKILLS[l].label}</option>`).join('')}
+           </select></div>`).join('');
       };
-      build('names-men', mensPlayers, 'm');
-      build('names-women', womensPlayers, 'w');
+      build('names-men', mensPlayers, mensSkill, 'm');
+      build('names-women', womensPlayers, womensSkill, 'w');
+      const sel = document.getElementById('rounds-select');
+      if ([...sel.options].some(o => o.value === String(SCHED.m.length))) sel.value = String(SCHED.m.length);
+      updateRoundsHint();
+    }
+
+    function readEditor() {
+      const rn = (g, def) => def.map((d, i) => (document.getElementById(`name_${g}_${i}`).value.trim() || d));
+      const rs = g => Array.from({length: 10}, (_, i) => Number(document.getElementById(`skill_${g}_${i}`).value));
+      mensPlayers = rn('m', DEFAULT_MEN); womensPlayers = rn('w', DEFAULT_WOMEN);
+      mensSkill = rs('m'); womensSkill = rs('w');
     }
 
     let nameTimer = null;
     function onNameInput() {
       clearTimeout(nameTimer);
       nameTimer = setTimeout(async () => {
-        const read = (g, def) => def.map((d, i) => (document.getElementById(`name_${g}_${i}`).value.trim() || d));
-        mensPlayers = read('m', DEFAULT_MEN);
-        womensPlayers = read('w', DEFAULT_WOMEN);
+        readEditor();
         const ok = await writeNames();
         renderStandings(); renderMatches(); renderPlayoffs();
-        showToast(ok ? '✓ Names saved' : 'Save failed — check connection', !ok);
+        showToast(ok ? '✓ Saved' : 'Save failed — check connection', !ok);
       }, 800);
+    }
+
+    // ---------- balanced schedule generator ----------
+    // Equal games need (total matches) = 5 x k, so everyone plays g = 2k games.
+    // If rounds can't all be full (2 matches), some rounds get only 1 match.
+    function planRounds(R) {
+      const k = Math.floor((2 * R) / 5), M = 5 * k, g = 2 * k;
+      const half = 2 * R - M; // rounds with only one match
+      const nms = new Array(R).fill(2);
+      for (let i = 0; i < half; i++) nms[Math.min(R - 1, Math.floor((i + 0.5) * R / half))] = 1;
+      return { g, M, half, nms };
+    }
+
+    function updateRoundsHint() {
+      const el = document.getElementById('rounds-hint');
+      if (!el) return;
+      const p = planRounds(parseInt(document.getElementById('rounds-select').value));
+      el.innerText = `Everyone plays exactly ${p.g} games.` + (p.half ? ` ${p.half} round${p.half > 1 ? 's have' : ' has'} only 1 match per group (the rest sit out) so game counts stay equal.` : '');
+    }
+
+    function genSchedule(skills, R) {
+      const { g, nms } = planRounds(R);
+      const cost = S => {
+        const games = new Array(10).fill(0), part = new Array(100).fill(0), opp = new Array(100).fill(0);
+        let c = 0, prevRest = null;
+        for (let r = 0; r < R; r++) {
+          const p = S[r], n = nms[r];
+          for (let m = 0; m < n; m++) {
+            const a = p[m * 4], b = p[m * 4 + 1], x = p[m * 4 + 2], y = p[m * 4 + 3];
+            games[a]++; games[b]++; games[x]++; games[y]++;
+            part[Math.min(a, b) * 10 + Math.max(a, b)]++;
+            part[Math.min(x, y) * 10 + Math.max(x, y)]++;
+            c += 40 * Math.abs(skills[a] + skills[b] - skills[x] - skills[y]);
+            [[a, x], [a, y], [b, x], [b, y]].forEach(([u, v]) => opp[Math.min(u, v) * 10 + Math.max(u, v)]++);
+          }
+          const rest = p.slice(n * 4);
+          if (prevRest) rest.forEach(q => { if (prevRest.includes(q)) c += 25; });
+          prevRest = rest;
+        }
+        for (let i = 0; i < 10; i++) c += 100000 * Math.abs(games[i] - g);
+        for (let i = 0; i < 100; i++) { if (part[i] > 1) c += 60 * (part[i] - 1); c += opp[i] * opp[i]; }
+        return c;
+      };
+      const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+      // start from a layout where everybody already has exactly g games
+      const initial = () => {
+        const order = shuffle([0,1,2,3,4,5,6,7,8,9]);
+        let ptr = 0;
+        return Array.from({length: R}, (_, r) => {
+          const restSize = 10 - nms[r] * 4;
+          const rest = [];
+          for (let i = 0; i < restSize; i++) rest.push(order[ptr++ % 10]);
+          const play = shuffle(order.filter(q => !rest.includes(q)));
+          return play.concat(rest);
+        });
+      };
+      let best = null, bestCost = Infinity;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const S = initial();
+        let cur = cost(S), T = 30;
+        for (let it = 0; it < 30000; it++) {
+          if (Math.random() < 0.3 && R > 1) {
+            // swap rest/play roles across two rounds (keeps everyone's game count)
+            const r1 = Math.floor(Math.random() * R); let r2 = Math.floor(Math.random() * R); if (r2 === r1) r2 = (r2 + 1) % R;
+            const p1 = S[r1], p2 = S[r2];
+            const i = 4 * nms[r1] + Math.floor(Math.random() * (10 - 4 * nms[r1]));
+            if (i >= 10) continue;
+            const j = Math.floor(Math.random() * (4 * nms[r1]));
+            if (4 * nms[r1] === 0) continue;
+            const x = p1[i], y = p1[j];
+            const a = p2.indexOf(x), b = p2.indexOf(y);
+            if (!(a < 4 * nms[r2] && b >= 4 * nms[r2])) continue;
+            [p1[i], p1[j]] = [p1[j], p1[i]]; [p2[a], p2[b]] = [p2[b], p2[a]];
+            const n = cost(S);
+            if (n <= cur || Math.random() < Math.exp((cur - n) / T)) cur = n;
+            else { [p1[i], p1[j]] = [p1[j], p1[i]]; [p2[a], p2[b]] = [p2[b], p2[a]]; }
+          } else {
+            const r = Math.floor(Math.random() * R), lim = 4 * nms[r];
+            if (lim < 2) continue;
+            const i = Math.floor(Math.random() * lim);
+            let j = Math.floor(Math.random() * lim); if (j === i) j = (j + 1) % lim;
+            [S[r][i], S[r][j]] = [S[r][j], S[r][i]];
+            const n = cost(S);
+            if (n <= cur || Math.random() < Math.exp((cur - n) / T)) cur = n; else [S[r][i], S[r][j]] = [S[r][j], S[r][i]];
+          }
+          T = Math.max(0.05, T * 0.9998);
+        }
+        if (cur < bestCost) { bestCost = cur; best = S.map(p => p.slice()); }
+      }
+      const srt = arr => arr.slice().sort((x, y) => x - y);
+      const sched = best.map((p, r) => {
+        const ms = [];
+        for (let m = 0; m < nms[r]; m++) ms.push({ t1: srt([p[m * 4], p[m * 4 + 1]]), t2: srt([p[m * 4 + 2], p[m * 4 + 3]]) });
+        return { rest: srt(p.slice(nms[r] * 4)), m: ms };
+      });
+      let maxGap = 0;
+      sched.forEach(r => r.m.forEach(m => { maxGap = Math.max(maxGap, Math.abs(m.t1.reduce((a, i) => a + skills[i], 0) - m.t2.reduce((a, i) => a + skills[i], 0))); }));
+      return { sched, maxGap, g };
+    }
+
+    async function generateSchedules() {
+      if (currentMode !== 'scorekeeper' || generating) return;
+      const R = parseInt(document.getElementById('rounds-select').value);
+      if (!confirm(`Generate a new ${R}-round balanced schedule (everyone plays ${planRounds(R).g} games)?\n\nThis clears ALL current scores (groups and playoffs).`)) return;
+      generating = true;
+      try {
+        readEditor();
+        showToast('Generating…');
+        await new Promise(r => setTimeout(r, 40));
+        const gm = genSchedule(mensSkill, R), gw = genSchedule(womensSkill, R);
+        const payload = { m: gm.sched, w: gw.sched, skills: { m: mensSkill.slice(), w: womensSkill.slice() } };
+        let ok = true, err = '';
+        if (!CLOUD) {
+          localStorage.setItem('pb_schedule', JSON.stringify(payload));
+          localStorage.setItem('pb_scores_v2', '{}');
+          localStorage.setItem('pb_names', JSON.stringify({ men: mensPlayers, women: womensPlayers, menSkill: mensSkill, womenSkill: womensSkill }));
+        } else {
+          try {
+            const put = async (p, body) => { const r = await fetch(`${FIREBASE_URL}/${p}.json`, { method: 'PUT', body }); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); };
+            await put('schedule', JSON.stringify(payload));
+            await put('scores_v2', 'null');
+            if (!(await writeNames())) throw new Error('names not saved');
+            const chk = await (await fetch(`${FIREBASE_URL}/schedule.json`, {cache: 'no-store'})).json();
+            if (!chk || !chk.m || chk.m.length !== R) throw new Error('schedule did not save');
+          } catch (e) { ok = false; err = e.message; setSync(false, err); }
+        }
+        SCHED = { m: payload.m, w: payload.w };
+        SCHED_SKILLS = payload.skills;
+        matchScores = {};
+        currentRoundIndex = 0;
+        buildRoundButtons();
+        renderStandings(); renderMatches(); renderPlayoffs();
+        showToast(ok ? `✓ ${R}-round schedule ready · biggest team gap: men ${gm.maxGap}, women ${gw.maxGap}` : `Save failed (${err})`, !ok);
+      } catch (e) {
+        showToast('Error: ' + e.message, true);
+      } finally {
+        generating = false;
+      }
     }
 
     // ---------- tabs / rounds ----------
@@ -471,9 +714,9 @@
 
     // ---------- standings ----------
     function calculateStats(players, genderKey) {
-      const stats = players.map(name => ({ name, wins: 0, losses: 0, pointsScored: 0, pointsConceded: 0, diff: 0 }));
-      for (let r = 0; r < 9; r++) {
-        defaultRoundRobin[r].forEach((m, mIdx) => {
+      const stats = players.map((name, idx) => ({ name, idx, wins: 0, losses: 0, pointsScored: 0, pointsConceded: 0, diff: 0 }));
+      for (let r = 0; r < SCHED[genderKey].length; r++) {
+        SCHED[genderKey][r].m.forEach((m, mIdx) => {
           const score = matchScores[`${genderKey}_r${r}_m${mIdx}`];
           if (score && score.s1 !== '' && score.s2 !== '' && score.s1 != null && score.s2 != null) {
             const s1 = parseInt(score.s1) || 0, s2 = parseInt(score.s2) || 0;
@@ -488,29 +731,43 @@
     }
 
     function renderStandings() {
-      const renderBody = (id, data) => {
+      const renderBody = (id, data, skills) => {
         document.getElementById(id).innerHTML = data.map((p, idx) => `
           <tr class="${idx < 4 ? 'bg-emerald-500/10 font-bold' : ''}">
             <td class="py-2.5 px-1 font-mono text-slate-400">${idx + 1}</td>
-            <td class="py-2.5 px-2"><span class="text-white">${p.name}</span>${idx < 4 ? '<span class="ml-1 text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded">QUAL</span>' : ''}</td>
+            <td class="py-2.5 px-2"><span class="text-white">${esc(p.name)}</span>${skillTag(skills[p.idx])}${idx < 4 ? '<span class="ml-1 text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded">QUAL</span>' : ''}</td>
             <td class="py-2.5 px-2 text-center font-mono text-slate-300">${p.wins}-${p.losses}</td>
             <td class="py-2.5 px-2 text-center font-mono ${p.diff > 0 ? 'text-emerald-400' : p.diff < 0 ? 'text-rose-400' : 'text-slate-400'}">${p.diff > 0 ? '+' : ''}${p.diff}</td>
             <td class="py-2.5 px-2 text-center font-mono text-white">${p.pointsScored}</td>
           </tr>`).join('');
       };
-      renderBody('mens-standings-body', calculateStats(mensPlayers, 'm'));
-      renderBody('womens-standings-body', calculateStats(womensPlayers, 'w'));
+      renderBody('mens-standings-body', calculateStats(mensPlayers, 'm'), mensSkill);
+      renderBody('womens-standings-body', calculateStats(womensPlayers, 'w'), womensSkill);
     }
 
     // ---------- matches ----------
     function renderMatches() {
-      const pairs = defaultRoundRobin[currentRoundIndex];
-      let html = '';
-      [['m', mensPlayers, 'Court 1 (Men)'], ['w', womensPlayers, 'Court 2 (Women)']].forEach(([g, names, court]) => {
-        pairs.forEach((m, idx) => {
-          const key = `${g}_r${currentRoundIndex}_m${idx}`;
+      const r = currentRoundIndex;
+      const rn = (names, idxs) => idxs.map(i => esc(names[i])).join(' &amp; ');
+      let html = currentMode === 'scorekeeper' ? `<div class="md:col-span-2 flex justify-end">
+        <button onclick="resetRound()" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition">🗑️ Reset Round ${r + 1} Scores</button>
+      </div>` : '';
+      if (currentMode === 'scorekeeper' && scheduleStale()) html += `<div class="md:col-span-2 bg-rose-500/10 border border-rose-500/40 rounded-xl p-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <span class="text-rose-200 font-semibold">⚠️ This schedule was not balanced for the current skill levels, so matches may be unfair.</span>
+        <button onclick="switchTab('names')" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs rounded-lg transition flex-shrink-0">Go to Players &amp; Skills → Generate</button>
+      </div>`;
+      html += `<div class="md:col-span-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:gap-6 gap-1">
+        <span class="font-bold text-amber-400">😴 Resting this round</span>
+        <span><span class="text-sky-400 font-bold">Men:</span> <span class="text-white font-semibold">${rn(mensPlayers, SCHED.m[r].rest)}</span></span>
+        <span><span class="text-pink-400 font-bold">Women:</span> <span class="text-white font-semibold">${rn(womensPlayers, SCHED.w[r].rest)}</span></span>
+      </div>`;
+      [['m', mensPlayers, mensSkill, 'Court 1 (Men)'], ['w', womensPlayers, womensSkill, 'Court 2 (Women)']].forEach(([g, names, skills, court]) => {
+        SCHED[g][r].m.forEach((m, idx) => {
+          const key = `${g}_r${r}_m${idx}`;
           const sc = matchScores[key] || {s1: '', s2: ''};
-          html += createMatchCard(court, `${names[m.t1[0]]} & ${names[m.t1[1]]}`, `${names[m.t2[0]]} & ${names[m.t2[1]]}`, key, sc.s1, sc.s2);
+          const team = t => t.map(i => `${esc(names[i])}${skillTag(skills[i])}`).join(' &amp; ');
+          const str = t => t.reduce((a, i) => a + skills[i], 0);
+          html += createMatchCard(currentMode === 'scorekeeper' ? `${court} · ⚖️ ${str(m.t1)} vs ${str(m.t2)}` : court, team(m.t1), team(m.t2), key, sc.s1, sc.s2);
         });
       });
       document.getElementById('matches-container').innerHTML = html;
@@ -556,7 +813,7 @@
     function renderPlayoffs() {
       const mTop = calculateStats(mensPlayers, 'm').slice(0, 4);
       const wTop = calculateStats(womensPlayers, 'w').slice(0, 4);
-      const p = i => `${mTop[i].name} & ${wTop[i].name}`;
+      const p = i => `${esc(mTop[i].name)} &amp; ${esc(wTop[i].name)}`;
 
       const ui = (id, a, b, key) => {
         const sc = matchScores[key] || {s1: '', s2: ''};
