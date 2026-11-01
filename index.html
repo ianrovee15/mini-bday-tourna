@@ -51,6 +51,7 @@
       <button onclick="switchTab('standings')" id="tab-btn-standings" class="tab-link pb-3 border-b-2 border-emerald-400 text-emerald-400">🏆 Leaderboards</button>
       <button onclick="switchTab('matches')" id="tab-btn-matches" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🎾 Group Matches</button>
       <button onclick="switchTab('playoffs')" id="tab-btn-playoffs" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🥇 Mixed Playoffs</button>
+      <button onclick="switchTab('names')" id="tab-btn-names" class="tab-link hidden pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">✏️ Edit Names</button>
     </div>
 
     <section id="tab-standings" class="tab-content space-y-6">
@@ -126,13 +127,33 @@
         </div>
       </div>
     </section>
+
+    <section id="tab-names" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
+        <div class="border-b border-slate-700/60 pb-3">
+          <h2 class="text-lg font-bold text-white">✏️ Edit Participant Names</h2>
+          <p class="text-xs text-slate-400 mt-1">Changes save automatically and update on everyone's phone.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h3 class="text-sm font-bold text-sky-400">👨 Men</h3>
+            <div id="names-men" class="space-y-2"></div>
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-sm font-bold text-pink-400">👩 Women</h3>
+            <div id="names-women" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-4 py-2">
-    <div class="grid grid-cols-3 gap-2 text-center max-w-md mx-auto">
+    <div id="mob-grid" class="grid grid-cols-3 gap-2 text-center max-w-md mx-auto">
       <button onclick="switchTab('standings')" id="mob-btn-standings" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-emerald-400"><span class="text-lg">🏆</span><span class="text-[10px] font-bold">Standings</span></button>
       <button onclick="switchTab('matches')" id="mob-btn-matches" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">🎾</span><span class="text-[10px] font-bold">Matches</span></button>
       <button onclick="switchTab('playoffs')" id="mob-btn-playoffs" class="mob-link py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">🥇</span><span class="text-[10px] font-bold">Playoffs</span></button>
+      <button onclick="switchTab('names')" id="mob-btn-names" class="mob-link hidden py-1.5 rounded-xl flex flex-col items-center justify-center text-slate-400"><span class="text-lg">✏️</span><span class="text-[10px] font-bold">Names</span></button>
     </div>
   </nav>
 
@@ -177,8 +198,10 @@
     const POLL_MS = 5000;
     const DEFAULT_PIN = "12345678";
 
-    const mensPlayers = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Troy", "Allan", "Eurs", "Ivan", "Franz"];
-    const womensPlayers = ["Ju", "Sars", "Kams", "Shane", "Aeio", "Pam", "Fiona", "Jam", "Nina", "Camille"];
+    const DEFAULT_MEN = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Troy", "Allan", "Eurs", "Ivan", "Franz"];
+    const DEFAULT_WOMEN = ["Ju", "Sars", "Kams", "Shane", "Aeio", "Pam", "Fiona", "Jam", "Nina", "Camille"];
+    let mensPlayers = DEFAULT_MEN.slice();
+    let womensPlayers = DEFAULT_WOMEN.slice();
 
     const defaultRoundRobin = [
       [ {t1: [0, 1], t2: [2, 3]}, {t1: [4, 5], t2: [6, 7]} ],
@@ -218,17 +241,20 @@
       if (!CLOUD) {
         matchScores = JSON.parse(localStorage.getItem('pb_scores') || '{}');
         pinHash = localStorage.getItem('pb_pin_hash');
+        applyNames(JSON.parse(localStorage.getItem('pb_names') || 'null'));
         setSync(null);
         return;
       }
       try {
-        const [sRes, pRes] = await Promise.all([
+        const [sRes, pRes, nRes] = await Promise.all([
           fetch(`${FIREBASE_URL}/scores.json`, {cache: 'no-store'}),
-          fetch(`${FIREBASE_URL}/pin.json`, {cache: 'no-store'})
+          fetch(`${FIREBASE_URL}/pin.json`, {cache: 'no-store'}),
+          fetch(`${FIREBASE_URL}/names.json`, {cache: 'no-store'})
         ]);
-        if (!sRes.ok || !pRes.ok) throw new Error('bad response');
+        if (!sRes.ok || !pRes.ok || !nRes.ok) throw new Error('bad response');
         matchScores = (await sRes.json()) || {};
         pinHash = (await pRes.json()) || null;
+        applyNames(await nRes.json());
         setSync(true);
       } catch (e) {
         setSync(false);
@@ -242,6 +268,23 @@
         const r = await fetch(`${FIREBASE_URL}/scores/${key}.json`, {
           method: 'PUT', body: JSON.stringify({ s1, s2 })
         });
+        if (!r.ok) throw new Error();
+        setSync(true);
+        return true;
+      } catch (e) { setSync(false); return false; }
+    }
+
+    function applyNames(data) {
+      const fix = (arr, def) => def.map((d, i) => (arr && typeof arr[i] === 'string' && arr[i].trim()) ? arr[i].trim() : d);
+      mensPlayers = fix(data && data.men, DEFAULT_MEN);
+      womensPlayers = fix(data && data.women, DEFAULT_WOMEN);
+    }
+
+    async function writeNames() {
+      const data = { men: mensPlayers, women: womensPlayers };
+      if (!CLOUD) { localStorage.setItem('pb_names', JSON.stringify(data)); return true; }
+      try {
+        const r = await fetch(`${FIREBASE_URL}/names.json`, { method: 'PUT', body: JSON.stringify(data) });
         if (!r.ok) throw new Error();
         setSync(true);
         return true;
@@ -267,6 +310,7 @@
       renderStandings();
       renderMatches();
       renderPlayoffs();
+      renderNamesEditor();
       if (CLOUD) setInterval(pollRefresh, POLL_MS);
     }
 
@@ -293,12 +337,21 @@
         badge.className = "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30";
         authBtnText.innerText = "Scorekeeper Login";
         pinBtn.classList.add('hidden');
+        setNamesTabVisible(false);
       } else {
         badge.innerText = "Scorekeeper Mode (Unlocked)";
         badge.className = "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
         authBtnText.innerText = "Lock / Logout";
         pinBtn.classList.remove('hidden');
+        setNamesTabVisible(true);
       }
+    }
+
+    function setNamesTabVisible(show) {
+      document.getElementById('tab-btn-names').classList.toggle('hidden', !show);
+      document.getElementById('mob-btn-names').classList.toggle('hidden', !show);
+      document.getElementById('mob-grid').className = 'grid ' + (show ? 'grid-cols-4' : 'grid-cols-3') + ' gap-2 text-center max-w-md mx-auto';
+      if (!show && !document.getElementById('tab-names').classList.contains('hidden')) switchTab('standings');
     }
 
     // ---------- auth / PIN ----------
@@ -365,6 +418,31 @@
           showPinError('Incorrect PIN.');
         }
       }
+    }
+
+    // ---------- names editor ----------
+    function renderNamesEditor() {
+      const build = (id, arr, g) => {
+        document.getElementById(id).innerHTML = arr.map((n, i) =>
+          `<div class="flex items-center gap-2"><span class="w-6 text-xs font-mono text-slate-500">${i + 1}</span>
+           <input type="text" id="name_${g}_${i}" value="${n.replace(/"/g, '&quot;')}" maxlength="20" oninput="onNameInput()"
+             class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></div>`).join('');
+      };
+      build('names-men', mensPlayers, 'm');
+      build('names-women', womensPlayers, 'w');
+    }
+
+    let nameTimer = null;
+    function onNameInput() {
+      clearTimeout(nameTimer);
+      nameTimer = setTimeout(async () => {
+        const read = (g, def) => def.map((d, i) => (document.getElementById(`name_${g}_${i}`).value.trim() || d));
+        mensPlayers = read('m', DEFAULT_MEN);
+        womensPlayers = read('w', DEFAULT_WOMEN);
+        const ok = await writeNames();
+        renderStandings(); renderMatches(); renderPlayoffs();
+        showToast(ok ? '✓ Names saved' : 'Save failed — check connection', !ok);
+      }, 800);
     }
 
     // ---------- tabs / rounds ----------
@@ -440,7 +518,7 @@
 
     function createMatchCard(court, t1, t2, key, s1, s2) {
       const ro = currentMode === 'spectator';
-      const inp = (id, v) => `<input type="number" inputmode="numeric" id="${id}" min="0" max="15" value="${v ?? ''}" ${ro ? 'disabled' : ''} class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">`;
+      const inp = (id, v) => `<input type="number" inputmode="numeric" id="${id}" min="0" max="15" value="${v ?? ''}" ${ro ? 'disabled' : ''} oninput="queueSave('${id.replace(/_s[12]$/, '')}', false)" class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">`;
       return `
         <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 space-y-3 shadow-md">
           <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${court}</div>
@@ -451,20 +529,20 @@
             ${inp(key + '_s2', s2)}
             <div class="flex-1 text-xs sm:text-sm font-bold text-white text-right">${t2}</div>
           </div>
-          ${!ro ? `<div class="pt-1 flex justify-end"><button onclick="saveMatchScore('${key}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg shadow transition">💾 Save Score</button></div>` : ''}
         </div>`;
     }
 
-    async function saveMatchScore(key) {
-      const ok = await writeScore(key, document.getElementById(key + '_s1').value, document.getElementById(key + '_s2').value);
-      renderStandings(); renderPlayoffs();
-      showToast(ok ? 'Score Saved!' : 'Save failed — check connection', !ok);
-    }
-
-    async function savePlayoffScore(key) {
-      const ok = await writeScore(key, document.getElementById(key + '_s1').value, document.getElementById(key + '_s2').value);
-      renderPlayoffs();
-      showToast(ok ? 'Playoff Score Saved!' : 'Save failed — check connection', !ok);
+    const saveTimers = {};
+    function queueSave(key, isPlayoff) {
+      clearTimeout(saveTimers[key]);
+      saveTimers[key] = setTimeout(async () => {
+        const v1 = document.getElementById(key + '_s1').value;
+        const v2 = document.getElementById(key + '_s2').value;
+        const ok = await writeScore(key, v1, v2);
+        renderStandings();
+        if (!isPlayoff) renderPlayoffs(); // seeds may change; playoff inputs aren't focused here
+        showToast(ok ? '✓ Saved' : 'Save failed — check connection', !ok);
+      }, 700);
     }
 
     function showToast(msg, isError) {
@@ -484,9 +562,8 @@
         const sc = matchScores[key] || {s1: '', s2: ''};
         const ro = currentMode === 'spectator';
         const row = (team, f, v) => `<div class="flex items-center justify-between text-xs font-bold gap-2"><span class="text-white">${team}</span>
-          <input type="number" inputmode="numeric" id="${key}_${f}" min="0" max="25" value="${v ?? ''}" ${ro ? 'disabled' : ''} class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm disabled:opacity-80" placeholder="0"></div>`;
-        document.getElementById(id).innerHTML = `<div class="space-y-2">${row(a, 's1', sc.s1)}${row(b, 's2', sc.s2)}
-          ${!ro ? `<div class="pt-1 flex justify-end"><button onclick="savePlayoffScore('${key}')" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] rounded shadow transition">Save</button></div>` : ''}</div>`;
+          <input type="number" inputmode="numeric" id="${key}_${f}" min="0" max="25" value="${v ?? ''}" ${ro ? 'disabled' : ''} oninput="queueSave('${key}', true)" class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm disabled:opacity-80" placeholder="0"></div>`;
+        document.getElementById(id).innerHTML = `<div class="space-y-2">${row(a, 's1', sc.s1)}${row(b, 's2', sc.s2)}</div>`;
       };
 
       ui('semi1-teams', `Seed #1: ${p(0)}`, `Seed #4: ${p(3)}`, 'playoff_semi1');
