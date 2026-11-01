@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Cache Control Headers to prevent phones from serving stale cached files -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Pickleball Mini-Tournament Manager</title>
 
   <!-- Tailwind CSS & Google Fonts -->
@@ -23,12 +27,6 @@
     }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    .timer-running { animation: pulse-ring 2s infinite ease-in-out; }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-24 md:pb-12 flex flex-col antialiased">
@@ -43,8 +41,8 @@
         <div>
           <h1 class="text-base font-bold text-white leading-tight">Pickleball Mini-Tourna</h1>
           <div class="flex items-center gap-2 text-xs text-slate-400">
-            <span id="mode-badge" class="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30">
-              Scorekeeper Mode
+            <span id="mode-badge" class="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              Spectator View
             </span>
             <span class="hidden md:inline">• First to 7 (No Deuce)</span>
           </div>
@@ -53,8 +51,8 @@
 
       <!-- Header Quick Actions -->
       <div class="flex items-center gap-2">
-        <button id="toggle-mode-btn" onclick="toggleMode()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
-          Switch Mode
+        <button id="auth-btn" onclick="openPinModal()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1">
+          <span>🔒</span> Scorekeeper Login
         </button>
         <button onclick="openQRModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
@@ -73,17 +71,17 @@
         </div>
         <div>
           <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Courtside Timer</div>
-          <div id="timer-status" class="text-xs font-medium text-slate-300">Ready to start</div>
+          <div id="timer-status" class="text-xs font-medium text-slate-300">Ready</div>
         </div>
       </div>
-      <div id="timer-controls" class="flex items-center gap-1.5">
-        <button onclick="startTimer()" class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition">
+      <div id="timer-controls" class="hidden items-center gap-1.5">
+        <button onclick="startTimer()" class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition" title="Start Timer">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button onclick="pauseTimer()" class="p-2 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition">
+        <button onclick="pauseTimer()" class="p-2 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition" title="Pause Timer">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
-        <button onclick="resetTimer()" class="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition">
+        <button onclick="resetTimer()" class="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition" title="Reset Timer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </button>
       </div>
@@ -93,7 +91,7 @@
   <!-- Main Container -->
   <main class="flex-grow max-w-6xl w-full mx-auto p-4 space-y-6">
 
-    <!-- Desktop Navigation Tabs -->
+    <!-- Desktop Navigation Tabs (Only 3 Tabs) -->
     <div class="hidden md:flex border-b border-slate-800 space-x-6 text-sm font-semibold">
       <button onclick="switchTab('standings')" id="tab-btn-standings" class="tab-link pb-3 border-b-2 border-emerald-400 text-emerald-400">
         🏆 Leaderboards
@@ -103,9 +101,6 @@
       </button>
       <button onclick="switchTab('playoffs')" id="tab-btn-playoffs" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
         🥇 Mixed Playoffs
-      </button>
-      <button onclick="switchTab('schedule')" id="tab-btn-schedule" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
-        ⏱️ Timeline
       </button>
     </div>
 
@@ -253,68 +248,11 @@
       </div>
     </section>
 
-    <!-- TAB 4: TIMELINE -->
-    <section id="tab-schedule" class="tab-content hidden space-y-4">
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
-        <h2 class="text-lg font-bold text-slate-200">⏱️ Strict 2-Hour Tournament Schedule</h2>
-        
-        <div class="divide-y divide-slate-700/40 text-sm">
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">Check-in & Warm-up</div>
-              <div class="text-xs text-slate-400">Briefing scoring rules (7 pts, No Deuce)</div>
-            </div>
-            <div class="font-mono text-emerald-400 font-bold text-xs">0:00 – 0:10</div>
-          </div>
-
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">9 Group Stage Rounds</div>
-              <div class="text-xs text-slate-400">7 mins play + 2 mins rotation per round</div>
-            </div>
-            <div class="font-mono text-emerald-400 font-bold text-xs">0:10 – 1:31</div>
-          </div>
-
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">Seeding & Water Break</div>
-              <div class="text-xs text-slate-400">Automated leaderboard calculates top 4 seeds</div>
-            </div>
-            <div class="font-mono text-amber-400 font-bold text-xs">1:31 – 1:40</div>
-          </div>
-
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">Mixed Doubles Semifinals</div>
-              <div class="text-xs text-slate-400">First to 11 (Win by 2)</div>
-            </div>
-            <div class="font-mono text-emerald-400 font-bold text-xs">1:40 – 1:53</div>
-          </div>
-
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">Medal Matches (Gold & Bronze)</div>
-              <div class="text-xs text-slate-400">First to 11 (Win by 2)</div>
-            </div>
-            <div class="font-mono text-emerald-400 font-bold text-xs">1:53 – 2:05</div>
-          </div>
-
-          <div class="py-3 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-white">Awarding & Group Photos</div>
-              <div class="text-xs text-slate-400">Wrap up and celebrate winners</div>
-            </div>
-            <div class="font-mono text-slate-400 font-bold text-xs">2:05 – 2:10</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </main>
 
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-2 py-1.5">
-    <div class="grid grid-cols-4 gap-1 text-center">
+  <!-- Mobile Bottom Navigation Bar (Only 3 Tabs) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-4 py-2">
+    <div class="grid grid-cols-3 gap-2 text-center">
       <button onclick="switchTab('standings')" id="mob-btn-standings" class="mob-link py-1.5 rounded-lg flex flex-col items-center justify-center text-emerald-400">
         <span class="text-lg">🏆</span>
         <span class="text-[10px] font-bold">Standings</span>
@@ -327,18 +265,43 @@
         <span class="text-lg">🥇</span>
         <span class="text-[10px] font-bold">Playoffs</span>
       </button>
-      <button onclick="switchTab('schedule')" id="mob-btn-schedule" class="mob-link py-1.5 rounded-lg flex flex-col items-center justify-center text-slate-400">
-        <span class="text-lg">⏱️</span>
-        <span class="text-[10px] font-bold">Timeline</span>
-      </button>
     </div>
   </nav>
+
+  <!-- PIN Entry Modal for Scorekeeper Authentication -->
+  <div id="pin-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-xs w-full p-6 text-center space-y-4">
+      <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto text-xl">
+        🔒
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-white">Scorekeeper Access</h3>
+        <p class="text-xs text-slate-400 mt-1">Enter PIN to edit scores and control timer.</p>
+      </div>
+
+      <form onsubmit="handlePinSubmit(event)" class="space-y-3">
+        <input type="password" id="pin-input" maxlength="8" placeholder="Enter PIN" 
+          class="w-full text-center px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 font-mono text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <div id="pin-error" class="text-xs font-bold text-rose-400 hidden">Incorrect PIN</div>
+
+        <div class="flex gap-2">
+          <button type="button" onclick="closePinModal()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition">
+            Unlock
+          </button>
+        </div>
+      </form>
+      <p class="text-[10px] text-slate-500">Default PIN: 1234</p>
+    </div>
+  </div>
 
   <!-- QR Code Modal -->
   <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center space-y-4">
       <h3 class="text-lg font-bold text-white">Scan for Live Standings</h3>
-      <p class="text-xs text-slate-400">Scan this code with any phone camera to view the live scoreboard in Spectator Mode.</p>
+      <p class="text-xs text-slate-400">Scan with phone camera to open in Read-Only Spectator Mode.</p>
       
       <div id="qrcode-container" class="bg-white p-4 rounded-xl flex justify-center items-center mx-auto w-48 h-48"></div>
 
@@ -355,46 +318,31 @@
 
   <!-- JavaScript Application Logic -->
   <script>
-    // Initial Rosters
-    const mensPlayers = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Troy", "Allan", "Eurs", "Ivan", "Franz"];
-    const womensPlayers = ["Ju", "Sars", "Kams", "Shane", "Aeio", "Pam", "Fiona", "Jam", "Nina", "Camille"];
+    const MENS_PLAYERS = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Troy", "Allan", "Eurs", "Ivan", "Franz"];
+    const WOMENS_PLAYERS = ["Ju", "Sars", "Kams", "Shane", "Aeio", "Pam", "Fiona", "Jam", "Nina", "Camille"];
+    
+    // Default Scorekeeper PIN
+    const SCOREKEEPER_PIN = "1234";
 
-    // App State Mode: 'scorekeeper' or 'spectator'
-    let currentMode = 'scorekeeper';
+    // Mode defaults ALWAYS to 'spectator' for everyone
+    let currentMode = 'spectator';
 
-    // Check URL Parameters for mode
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'spectator') {
-      currentMode = 'spectator';
-    }
-
-    // Default Match Schedules for 10 players across 9 Rounds
+    // Round robin schedule
     const defaultRoundRobin = [
-      // Round 1
       [ {t1: [0, 1], t2: [2, 3]}, {t1: [4, 5], t2: [6, 7]} ],
-      // Round 2
       [ {t1: [0, 2], t2: [4, 6]}, {t1: [1, 8], t2: [3, 9]} ],
-      // Round 3
       [ {t1: [0, 3], t2: [5, 8]}, {t1: [2, 7], t2: [4, 9]} ],
-      // Round 4
       [ {t1: [0, 4], t2: [1, 7]}, {t1: [3, 6], t2: [5, 9]} ],
-      // Round 5
       [ {t1: [0, 5], t2: [3, 8]}, {t1: [1, 9], t2: [2, 6]} ],
-      // Round 6
       [ {t1: [0, 6], t2: [1, 5]}, {t1: [4, 7], t2: [8, 9]} ],
-      // Round 7
       [ {t1: [0, 7], t2: [6, 8]}, {t1: [2, 9], t2: [3, 5]} ],
-      // Round 8
       [ {t1: [0, 8], t2: [2, 4]}, {t1: [1, 6], t2: [7, 9]} ],
-      // Round 9
       [ {t1: [0, 9], t2: [1, 3]}, {t1: [5, 7], t2: [6, 8]} ]
     ];
 
-    // Scores Store
     let matchScores = JSON.parse(localStorage.getItem('pb_scores')) || {};
 
-    // Timer Logic
-    let timerSeconds = 420; // 7 mins
+    let timerSeconds = 420;
     let timerInterval = null;
 
     function initApp() {
@@ -407,31 +355,64 @@
     function applyModeUI() {
       const badge = document.getElementById('mode-badge');
       const timerControls = document.getElementById('timer-controls');
+      const authBtn = document.getElementById('auth-btn');
 
       if (currentMode === 'spectator') {
         badge.innerText = "Spectator View (Read Only)";
         badge.className = "px-1.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30";
         if (timerControls) timerControls.style.display = 'none';
+        if (authBtn) {
+          authBtn.innerHTML = '<span>🔒</span> Scorekeeper Login';
+          authBtn.className = 'px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1';
+        }
       } else {
         badge.innerText = "Scorekeeper Mode";
         badge.className = "px-1.5 py-0.5 rounded font-bold uppercase tracking-wider text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30";
         if (timerControls) timerControls.style.display = 'flex';
+        if (authBtn) {
+          authBtn.innerHTML = '<span>🔓</span> Lock / Logout';
+          authBtn.className = 'px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-amber-500/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition flex items-center gap-1';
+        }
       }
     }
 
-    function toggleMode() {
-      currentMode = currentMode === 'scorekeeper' ? 'spectator' : 'scorekeeper';
-      applyModeUI();
-      renderMatches();
-      renderPlayoffs();
+    function openPinModal() {
+      if (currentMode === 'scorekeeper') {
+        // Log out back to spectator
+        currentMode = 'spectator';
+        applyModeUI();
+        renderMatches();
+        renderPlayoffs();
+        return;
+      }
+      document.getElementById('pin-input').value = '';
+      document.getElementById('pin-error').classList.add('hidden');
+      document.getElementById('pin-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('pin-input').focus(), 100);
     }
 
-    // TAB SWITCHING LOGIC
+    function closePinModal() {
+      document.getElementById('pin-modal').classList.add('hidden');
+    }
+
+    function handlePinSubmit(e) {
+      e.preventDefault();
+      const enteredPin = document.getElementById('pin-input').value;
+      if (enteredPin === SCOREKEEPER_PIN) {
+        currentMode = 'scorekeeper';
+        closePinModal();
+        applyModeUI();
+        renderMatches();
+        renderPlayoffs();
+      } else {
+        document.getElementById('pin-error').classList.remove('hidden');
+      }
+    }
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.getElementById('tab-' + tabId).classList.remove('hidden');
 
-      // Desktop links styling
       document.querySelectorAll('.tab-link').forEach(el => {
         el.classList.remove('border-emerald-400', 'text-emerald-400');
         el.classList.add('border-transparent', 'text-slate-400');
@@ -442,7 +423,6 @@
         activeDesk.classList.add('border-emerald-400', 'text-emerald-400');
       }
 
-      // Mobile links styling
       document.querySelectorAll('.mob-link').forEach(el => {
         el.classList.remove('text-emerald-400');
         el.classList.add('text-slate-400');
@@ -454,15 +434,9 @@
       }
     }
 
-    // CALCULATE STANDINGS
     function calculateStats(players, genderKey) {
       const stats = players.map(name => ({
-        name: name,
-        wins: 0,
-        losses: 0,
-        pointsScored: 0,
-        pointsConceded: 0,
-        diff: 0
+        name: name, wins: 0, losses: 0, pointsScored: 0, pointsConceded: 0, diff: 0
       }));
 
       for (let r = 0; r < 9; r++) {
@@ -493,7 +467,6 @@
 
       stats.forEach(s => s.diff = s.pointsScored - s.pointsConceded);
 
-      // Automated Tiebreakers: Wins -> Point Diff -> Points Scored
       stats.sort((a, b) => {
         if (b.wins !== a.wins) return b.wins - a.wins;
         if (b.diff !== a.diff) return b.diff - a.diff;
@@ -504,8 +477,8 @@
     }
 
     function renderStandings() {
-      const menStats = calculateStats(mensPlayers, 'm');
-      const womenStats = calculateStats(womensPlayers, 'w');
+      const menStats = calculateStats(MENS_PLAYERS, 'm');
+      const womenStats = calculateStats(WOMENS_PLAYERS, 'w');
 
       const renderBody = (containerId, data) => {
         const tbody = document.getElementById(containerId);
@@ -529,7 +502,6 @@
       renderBody('womens-standings-body', womenStats);
     }
 
-    // RENDER MATCHES FOR SELECTED ROUND
     function renderMatches() {
       const r = parseInt(document.getElementById('round-select').value) - 1;
       const container = document.getElementById('matches-container');
@@ -537,23 +509,19 @@
 
       let html = '';
 
-      // Men Matches
       pairs.forEach((m, idx) => {
         const key = `m_r${r}_m${idx}`;
         const score = matchScores[key] || {s1: '', s2: ''};
-        const t1Name = `${mensPlayers[m.t1[0]]} & ${mensPlayers[m.t1[1]]}`;
-        const t2Name = `${mensPlayers[m.t2[0]]} & ${mensPlayers[m.t2[1]]}`;
-        
+        const t1Name = `${MENS_PLAYERS[m.t1[0]]} & ${MENS_PLAYERS[m.t1[1]]}`;
+        const t2Name = `${MENS_PLAYERS[m.t2[0]]} & ${MENS_PLAYERS[m.t2[1]]}`;
         html += createMatchCard('Court 1 (Men)', t1Name, t2Name, key, score.s1, score.s2);
       });
 
-      // Women Matches
       pairs.forEach((m, idx) => {
         const key = `w_r${r}_m${idx}`;
         const score = matchScores[key] || {s1: '', s2: ''};
-        const t1Name = `${womensPlayers[m.t1[0]]} & ${womensPlayers[m.t1[1]]}`;
-        const t2Name = `${womensPlayers[m.t2[0]]} & ${womensPlayers[m.t2[1]]}`;
-        
+        const t1Name = `${WOMENS_PLAYERS[m.t1[0]]} & ${WOMENS_PLAYERS[m.t1[1]]}`;
+        const t2Name = `${WOMENS_PLAYERS[m.t2[0]]} & ${WOMENS_PLAYERS[m.t2[1]]}`;
         html += createMatchCard('Court 2 (Women)', t1Name, t2Name, key, score.s1, score.s2);
       });
 
@@ -569,11 +537,11 @@
             <div class="flex-1 text-sm font-bold text-white">${t1}</div>
             <input type="number" min="0" max="7" value="${s1}" ${isReadOnly ? 'disabled' : ''} 
               onchange="saveScore('${key}', 's1', this.value)"
-              class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">
+              class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-900/50" placeholder="0">
             <span class="text-xs text-slate-500 font-bold">VS</span>
             <input type="number" min="0" max="7" value="${s2}" ${isReadOnly ? 'disabled' : ''} 
               onchange="saveScore('${key}', 's2', this.value)"
-              class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">
+              class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80 disabled:bg-slate-900/50" placeholder="0">
             <div class="flex-1 text-sm font-bold text-white text-right">${t2}</div>
           </div>
         </div>
@@ -581,6 +549,7 @@
     }
 
     function saveScore(key, teamKey, value) {
+      if (currentMode !== 'scorekeeper') return;
       if (!matchScores[key]) matchScores[key] = {s1: '', s2: ''};
       matchScores[key][teamKey] = value;
       localStorage.setItem('pb_scores', JSON.stringify(matchScores));
@@ -588,16 +557,10 @@
       renderPlayoffs();
     }
 
-    // RENDER PLAYOFFS
     function renderPlayoffs() {
-      const mTop = calculateStats(mensPlayers, 'm').slice(0, 4);
-      const wTop = calculateStats(womensPlayers, 'w').slice(0, 4);
+      const mTop = calculateStats(MENS_PLAYERS, 'm').slice(0, 4);
+      const wTop = calculateStats(WOMENS_PLAYERS, 'w').slice(0, 4);
 
-      // Pairings:
-      // Seed 1: M1 + W1
-      // Seed 2: M2 + W2
-      // Seed 3: M3 + W3
-      // Seed 4: M4 + W4
       const p1 = `${mTop[0].name} & ${wTop[0].name}`;
       const p2 = `${mTop[1].name} & ${wTop[1].name}`;
       const p3 = `${mTop[2].name} & ${wTop[2].name}`;
@@ -611,13 +574,13 @@
             <span class="text-white">${teamA}</span>
             <input type="number" min="0" max="15" value="${score.s1}" ${isReadOnly ? 'disabled' : ''} 
               onchange="saveScore('${matchKey}', 's1', this.value)"
-              class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm" placeholder="0">
+              class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm disabled:opacity-80" placeholder="0">
           </div>
           <div class="flex items-center justify-between text-xs font-bold">
             <span class="text-white">${teamB}</span>
             <input type="number" min="0" max="15" value="${score.s2}" ${isReadOnly ? 'disabled' : ''} 
               onchange="saveScore('${matchKey}', 's2', this.value)"
-              class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm" placeholder="0">
+              class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm disabled:opacity-80" placeholder="0">
           </div>
         `;
       };
@@ -628,9 +591,8 @@
       renderPairingUI('bronze-teams', 'Loser Semi 1', 'Loser Semi 2', 'playoff_bronze');
     }
 
-    // TIMER FUNCTIONS
     function startTimer() {
-      if (timerInterval) return;
+      if (timerInterval || currentMode !== 'scorekeeper') return;
       document.getElementById('timer-status').innerText = 'Round In Progress';
       timerInterval = setInterval(() => {
         if (timerSeconds > 0) {
@@ -650,10 +612,11 @@
     }
 
     function resetTimer() {
+      if (currentMode !== 'scorekeeper') return;
       pauseTimer();
       timerSeconds = 420;
       updateTimerDisplay();
-      document.getElementById('timer-status').innerText = 'Ready to start';
+      document.getElementById('timer-status').innerText = 'Ready';
     }
 
     function updateTimerDisplay() {
@@ -663,13 +626,11 @@
         `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    // QR CODE MODAL
     function openQRModal() {
       const modal = document.getElementById('qr-modal');
       const qrcodeContainer = document.getElementById('qrcode-container');
       qrcodeContainer.innerHTML = '';
 
-      // Construct Share URL with spectator mode parameter
       const spectatorURL = window.location.origin + window.location.pathname + '?mode=spectator';
 
       new QRCode(qrcodeContainer, {
@@ -694,7 +655,6 @@
       alert('Spectator link copied to clipboard!');
     }
 
-    // Run on load
     window.onload = initApp;
   </script>
 </body>
