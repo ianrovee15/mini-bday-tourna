@@ -24,6 +24,7 @@
           <div class="flex items-center gap-2 text-xs text-slate-400">
             <span id="mode-badge" class="px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30">Spectator View (Read Only)</span>
             <span id="sync-dot" class="w-2 h-2 rounded-full bg-slate-500" title="Sync status"></span>
+            <span id="unsynced-badge" class="hidden px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold"></span>
           </div>
         </div>
       </div>
@@ -43,6 +44,8 @@
   <div id="offline-banner" class="hidden bg-rose-500/20 border-b border-rose-500/40 text-rose-200 text-xs font-semibold text-center px-4 py-2">
     Cloud sync is not set up yet — scores are only saved on this device. See FIREBASE_URL in the code.
   </div>
+
+  <div id="live-strip" class="hidden px-4 pt-3 max-w-6xl w-full mx-auto"></div>
 
   <div id="toast" class="fixed top-16 right-4 z-50 bg-emerald-500 text-slate-950 px-4 py-2 rounded-xl font-bold text-xs shadow-xl hidden">Saved!</div>
 
@@ -134,6 +137,17 @@
           <h2 class="text-lg font-bold text-white">✏️ Players &amp; Skill Levels</h2>
           <p class="text-xs text-slate-400 mt-1">Names and skill levels save automatically. You can add or remove players (4–12 per group). After adding/removing players or changing skills, tap “Generate balanced schedule” so the matches are rebuilt.</p>
         </div>
+        <div class="bg-slate-900/60 border border-emerald-500/30 rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-emerald-400">📲 Player Check-in</h3>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="openQRModal('checkin')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">Show check-in QR</button>
+              <button id="checkin-toggle" onclick="toggleCheckinOpen()" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Check-in open</button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400">Players scan the QR, enter their name and level, then land on the live scoreboard. They show up here for you to add to the roster.</p>
+          <div id="checkin-list" class="space-y-2"></div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <h3 class="text-sm font-bold text-sky-400">👨 Men</h3>
@@ -159,6 +173,22 @@
           </div>
           <p id="rounds-hint" class="text-[11px] text-slate-400"></p>
           <p class="text-[11px] text-rose-300">Generating a new schedule clears all current scores.</p>
+        </div>
+        <div class="border-t border-slate-700/60 pt-4 space-y-3">
+          <h3 class="text-sm font-bold text-sky-400">💾 Backup &amp; Data</h3>
+          <p class="text-xs text-slate-400">Download everything (players, schedule, scores) so a bad-connection day can't lose it. Restore puts it all back.</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadBackup()" class="px-3 py-2 text-xs font-bold rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 transition">⬇️ Download backup</button>
+            <button onclick="downloadResultsCsv()" class="px-3 py-2 text-xs font-bold rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">📄 Results (CSV)</button>
+            <button onclick="document.getElementById('restore-file').click()" class="px-3 py-2 text-xs font-bold rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">⬆️ Restore from backup</button>
+            <input id="restore-file" type="file" accept=".json,application/json" class="hidden" onchange="handleRestoreFile(this.files[0]); this.value = ''">
+          </div>
+          <p id="security-note" class="hidden text-[11px] font-semibold rounded-lg p-2"></p>
+        </div>
+        <div class="border-t border-rose-500/30 pt-4 space-y-2">
+          <h3 class="text-sm font-bold text-rose-400">⚠️ Danger zone</h3>
+          <button onclick="resetAllScores()" class="px-3 py-2 text-xs font-bold rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 transition">🗑️ Reset all scores</button>
+          <p class="text-[11px] text-slate-400">Keeps players and schedule, clears every score and the live round. A backup downloads first, and you can undo.</p>
         </div>
       </div>
     </section>
@@ -193,14 +223,31 @@
   <!-- QR Modal -->
   <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center space-y-4">
-      <h3 class="text-lg font-bold text-white">Scan for Live Standings</h3>
-      <p class="text-xs text-slate-400">Scan this code with any phone camera to view the live scoreboard in Spectator Mode.</p>
+      <div id="qr-tabs" class="hidden flex gap-2 justify-center">
+        <button id="qr-tab-spectator" onclick="showQR('spectator')" class="px-3 py-1.5 rounded-lg text-xs font-bold">📺 Live Standings</button>
+        <button id="qr-tab-checkin" onclick="showQR('checkin')" class="px-3 py-1.5 rounded-lg text-xs font-bold">📲 Player Check-in</button>
+      </div>
+      <h3 id="qr-title" class="text-lg font-bold text-white">Scan for Live Standings</h3>
+      <p id="qr-desc" class="text-xs text-slate-400">Scan this code with any phone camera to view the live scoreboard in Spectator Mode.</p>
       <div id="qrcode-container" class="bg-white p-4 rounded-xl flex justify-center items-center mx-auto w-48 h-48"></div>
+      <p id="qr-url" class="text-[10px] text-slate-500 break-all"></p>
       <div class="pt-2 flex gap-2">
         <button onclick="copyShareLink()" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition">Copy Link</button>
         <button onclick="closeQRModal()" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold transition">Close</button>
       </div>
     </div>
+  </div>
+
+  <!-- Player card -->
+  <div id="player-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4" onclick="if (event.target === this) closePlayerCard()">
+    <div id="player-card" class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5 space-y-4"></div>
+  </div>
+
+  <button id="undo-btn" onclick="undoLast()" class="hidden fixed bottom-20 md:bottom-6 left-4 z-40 px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white text-xs font-bold shadow-xl max-w-[70vw] truncate"></button>
+
+  <!-- Player check-in screen (opened from the check-in QR) -->
+  <div id="checkin-view" class="hidden fixed inset-0 z-[60] bg-slate-900 overflow-y-auto">
+    <div id="checkin-inner" class="max-w-md mx-auto p-5 space-y-5"></div>
   </div>
 
   <script>
@@ -211,6 +258,10 @@
     // (no trailing slash). Leave empty to run in this-device-only mode.
     // ============================================================
     const FIREBASE_URL = "https://mini-pickleball-tourna-default-rtdb.asia-southeast1.firebasedatabase.app";
+    // SECURE MODE (optional, recommended): paste your Firebase "Web API Key" here AFTER enabling
+    // Authentication -> Sign-in method -> Anonymous, then publish the rules from firebase-rules.json.
+    // Leave empty to keep the old open mode.
+    const FIREBASE_API_KEY = "";
     const POLL_MS = 5000;
     const DEFAULT_PIN = "12345678";
 
@@ -270,6 +321,15 @@
     const skillTag = lvl => { if (currentMode !== 'scorekeeper') return ''; const k = SKILLS[lvl] || SKILLS[3]; return `<span class="ml-1 text-[9px] px-1 rounded font-bold ${k.cls}">${k.tag}</span>`; };
 
     const CLOUD = !!FIREBASE_URL;
+    const SECURE = CLOUD && !!FIREBASE_API_KEY;
+    let liveRound = null;         // round currently being played (null = none)
+    let ME = null;                // {g, id} = "this is me" on this phone
+    let undoStack = [];
+    const unsynced = {};          // score edits that haven't reached the cloud yet
+    const IS_CHECKIN = new URLSearchParams(window.location.search).has('checkin');
+    const baseUrl = () => window.location.origin + window.location.pathname;
+    let CHECKINS = {};      // players waiting to be added (id -> {name, gender, skill, ts})
+    let checkinOpen = true;
     let currentMode = 'spectator';
     let currentRoundIndex = 0;
     let pinModalMode = 'login'; // 'login' | 'change'
@@ -291,65 +351,188 @@
       dot.title = ok === true ? 'Live' : ok === false ? ('Connection problem' + (msg ? ': ' + msg : '')) : 'Local only';
     }
 
+    // ----- Firebase access (adds the sign-in token for writes in secure mode) -----
+    let AUTH = null; // {idToken, refreshToken, uid, exp}
+    async function ensureAuth() {
+      if (!SECURE) return null;
+      if (!AUTH) { try { AUTH = JSON.parse(sessionStorage.getItem('pb_auth') || 'null'); } catch (e) { AUTH = null; } }
+      if (AUTH && Date.now() < AUTH.exp - 60000) return AUTH.idToken;
+      try {
+        let d;
+        if (AUTH && AUTH.refreshToken) {
+          const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`, { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(AUTH.refreshToken)}` });
+          if (!r.ok) throw new Error('refresh failed');
+          const j = await r.json();
+          d = { idToken: j.id_token, refreshToken: j.refresh_token, expiresIn: j.expires_in, uid: j.user_id };
+        } else {
+          const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ returnSecureToken: true }) });
+          if (!r.ok) throw new Error('sign-in failed');
+          const j = await r.json();
+          d = { idToken: j.idToken, refreshToken: j.refreshToken, expiresIn: j.expiresIn, uid: j.localId };
+        }
+        AUTH = { idToken: d.idToken, refreshToken: d.refreshToken, uid: d.uid, exp: Date.now() + Number(d.expiresIn) * 1000 };
+        sessionStorage.setItem('pb_auth', JSON.stringify(AUTH));
+        return AUTH.idToken;
+      } catch (e) { AUTH = null; sessionStorage.removeItem('pb_auth'); return null; }
+    }
+
+    async function fb(path, method, body, opts) {
+      opts = opts || {};
+      let url = `${FIREBASE_URL}/${path}.json`;
+      const write = method && method !== 'GET';
+      if (SECURE && write && opts.auth !== false) {
+        const t = await ensureAuth();
+        if (t) url += `?auth=${encodeURIComponent(t)}`;
+      }
+      const init = { method: method || 'GET' };
+      if (!write) init.cache = 'no-store';
+      if (body !== undefined) init.body = body;
+      const r = await fetch(url, init);
+      if (SECURE && write && opts.auth !== false && (r.status === 401 || r.status === 403)) showToast('Not allowed — log in again as scorekeeper', true);
+      return r;
+    }
+
     async function loadData() {
       if (!CLOUD) {
         matchScores = JSON.parse(localStorage.getItem('pb_scores_v2') || '{}');
         pinHash = localStorage.getItem('pb_pin_hash');
         applyNames(JSON.parse(localStorage.getItem('pb_names') || 'null'));
         applySchedule(JSON.parse(localStorage.getItem('pb_schedule') || 'null'));
+        applyLive(JSON.parse(localStorage.getItem('pb_live') || 'null'));
         setSync(null);
         return;
       }
       try {
-        const [sRes, pRes, nRes, schRes] = await Promise.all([
-          fetch(`${FIREBASE_URL}/scores_v2.json`, {cache: 'no-store'}),
-          fetch(`${FIREBASE_URL}/pin.json`, {cache: 'no-store'}),
-          fetch(`${FIREBASE_URL}/names.json`, {cache: 'no-store'}),
-          fetch(`${FIREBASE_URL}/schedule.json`, {cache: 'no-store'})
-        ]);
-        if (!sRes.ok || !pRes.ok || !nRes.ok || !schRes.ok) throw new Error('bad response');
+        const res = await Promise.all([fb('scores_v2'), SECURE ? Promise.resolve(null) : fb('pin'), fb('names'), fb('schedule'), fb('live')]);
+        const bad = res.find(r => r && !r.ok);
+        if (bad) throw new Error('HTTP ' + bad.status);
+        const [sRes, pRes, nRes, schRes, lRes] = res;
         matchScores = (await sRes.json()) || {};
-        pinHash = (await pRes.json()) || null;
+        Object.keys(unsynced).forEach(k => { matchScores[k] = unsynced[k]; }); // keep edits not yet sent
+        if (pRes) pinHash = (await pRes.json()) || null;
         applyNames(await nRes.json());
         applySchedule(await schRes.json());
+        applyLive(await lRes.json());
         setSync(true);
       } catch (e) {
         setSync(false, e.message);
       }
     }
 
-    async function writeScore(key, s1, s2) {
+    function applyLive(data) {
+      liveRound = (data && Number.isInteger(data.round) && data.round >= 0 && data.round < SCHED.m.length) ? data.round : null;
+    }
+
+    function labelFor(key) {
+      const m = key.match(/^([mw])_r(\d+)_m(\d+)$/);
+      if (m) return `${m[1] === 'm' ? 'Men' : 'Women'} R${+m[2] + 1} match ${+m[3] + 1}`;
+      return ({ playoff_semi1: 'Semi 1', playoff_semi2: 'Semi 2', playoff_gold: 'Gold match', playoff_bronze: 'Bronze match' })[key] || key;
+    }
+
+    function pushUndo(label, items, noCoalesce) {
+      const top = undoStack[undoStack.length - 1];
+      // quick successive edits of the same score count as one undo step
+      if (!noCoalesce && top && !top.group && items.length === 1 && top.items[0].key === items[0].key && Date.now() - top.ts < 10000) { top.ts = Date.now(); return; }
+      undoStack.push({ label, items, ts: Date.now(), group: !!noCoalesce });
+      if (undoStack.length > 30) undoStack.shift();
+      updateUndoUI();
+    }
+
+    function updateUndoUI() {
+      const b = document.getElementById('undo-btn');
+      if (!b) return;
+      const top = undoStack[undoStack.length - 1];
+      if (currentMode !== 'scorekeeper' || !top) { b.classList.add('hidden'); return; }
+      b.innerText = '↩ Undo: ' + top.label;
+      b.classList.remove('hidden');
+    }
+
+    function updateUnsyncedUI() {
+      const n = Object.keys(unsynced).length, el = document.getElementById('unsynced-badge');
+      if (!el) return;
+      el.classList.toggle('hidden', !n);
+      el.innerText = `⚠ ${n} unsaved`;
+    }
+
+    async function writeScore(key, s1, s2, noUndo) {
+      const prev = matchScores[key] ? { s1: matchScores[key].s1, s2: matchScores[key].s2 } : null;
+      if (!noUndo) pushUndo(labelFor(key), [{ key, prev }]);
       matchScores[key] = { s1, s2 };
       if (!CLOUD) { localStorage.setItem('pb_scores_v2', JSON.stringify(matchScores)); return true; }
       try {
-        const r = await fetch(`${FIREBASE_URL}/scores_v2/${key}.json`, {
-          method: 'PUT', body: JSON.stringify({ s1, s2 })
-        });
-        if (!r.ok) throw new Error();
+        const r = await fb(`scores_v2/${key}`, 'PUT', JSON.stringify({ s1, s2 }));
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        delete unsynced[key]; updateUnsyncedUI();
         setSync(true);
         return true;
-      } catch (e) { setSync(false); return false; }
+      } catch (e) {
+        unsynced[key] = { s1, s2 }; updateUnsyncedUI();   // keep it and retry automatically
+        setSync(false, e.message);
+        return false;
+      }
+    }
+
+    async function flushUnsynced() {
+      for (const k of Object.keys(unsynced)) {
+        try { const r = await fb(`scores_v2/${k}`, 'PUT', JSON.stringify(unsynced[k])); if (r.ok) delete unsynced[k]; } catch (e) { /* try again next time */ }
+      }
+      updateUnsyncedUI();
     }
 
     async function clearScores(keys) {
-      keys.forEach(k => delete matchScores[k]);
+      keys.forEach(k => { delete matchScores[k]; delete unsynced[k]; });
+      updateUnsyncedUI();
       if (!CLOUD) { localStorage.setItem('pb_scores_v2', JSON.stringify(matchScores)); return true; }
       try {
-        const rs = await Promise.all(keys.map(k => fetch(`${FIREBASE_URL}/scores_v2/${k}.json`, { method: 'PUT', body: 'null' })));
+        const rs = await Promise.all(keys.map(k => fb(`scores_v2/${k}`, 'PUT', 'null')));
         if (rs.some(r => !r.ok)) throw new Error('HTTP error');
         setSync(true);
         return true;
-      } catch (e) { setSync(false); return false; }
+      } catch (e) { setSync(false, e.message); return false; }
+    }
+
+    async function undoLast() {
+      if (currentMode !== 'scorekeeper' || !undoStack.length) return;
+      const e = undoStack.pop();
+      updateUndoUI();
+      let ok = true;
+      for (const { key, prev } of e.items) {
+        if (prev) ok = (await writeScore(key, prev.s1, prev.s2, true)) && ok;
+        else ok = (await clearScores([key])) && ok;
+      }
+      buildRoundButtons(); renderStandings(); renderMatches(); renderPlayoffs(); renderLiveStrip();
+      showToast(ok ? `↩ Undid: ${e.label}` : 'Undo failed — check connection', !ok);
     }
 
     async function resetRound() {
       if (currentMode !== 'scorekeeper') return;
-      if (!confirm(`Reset all scores for Round ${currentRoundIndex + 1}? This cannot be undone.`)) return;
+      if (!confirm(`Reset all scores for Round ${currentRoundIndex + 1}? (You can undo this.)`)) return;
       const keys = [];
       ['m', 'w'].forEach(g => SCHED[g][currentRoundIndex].m.forEach((_, i) => keys.push(`${g}_r${currentRoundIndex}_m${i}`)));
+      const items = keys.filter(k => matchScores[k]).map(k => ({ key: k, prev: { s1: matchScores[k].s1, s2: matchScores[k].s2 } }));
+      if (items.length) pushUndo(`Reset Round ${currentRoundIndex + 1}`, items, true);
       const ok = await clearScores(keys);
-      renderMatches(); renderStandings(); renderPlayoffs();
+      buildRoundButtons(); renderMatches(); renderStandings(); renderPlayoffs();
       showToast(ok ? `✓ Round ${currentRoundIndex + 1} reset` : 'Reset failed — check connection', !ok);
+    }
+
+    async function resetAllScores() {
+      if (currentMode !== 'scorekeeper') return;
+      const keys = Object.keys(matchScores);
+      if (!keys.length && liveRound === null) { showToast('Nothing to reset'); return; }
+      const t = prompt(`This clears ALL ${keys.length} scores (groups and playoffs) and the live round.\nA backup file downloads first, and you can undo.\n\nType RESET to confirm:`);
+      if (t === null || t.trim().toUpperCase() !== 'RESET') { showToast('Reset cancelled'); return; }
+      const items = keys.filter(k => matchScores[k]).map(k => ({ key: k, prev: { s1: matchScores[k].s1, s2: matchScores[k].s2 } }));
+      downloadBackup(true);
+      if (items.length) pushUndo('Reset ALL scores', items, true);
+      matchScores = {};
+      Object.keys(unsynced).forEach(k => delete unsynced[k]);
+      let ok = true;
+      if (!CLOUD) { localStorage.setItem('pb_scores_v2', '{}'); localStorage.removeItem('pb_live'); }
+      else { try { const r1 = await fb('scores_v2', 'PUT', 'null'); const r2 = await fb('live', 'PUT', 'null'); ok = r1.ok && r2.ok; } catch (e) { ok = false; } }
+      liveRound = null;
+      buildRoundButtons(); renderStandings(); renderMatches(); renderPlayoffs(); renderLiveStrip(); updateUnsyncedUI();
+      showToast(ok ? '✓ All scores reset (backup downloaded)' : 'Reset failed — check connection', !ok);
     }
 
     function parseGroup(list, legacySkills, defNames, prefix) {
@@ -419,7 +602,7 @@
 
     function syncRoundButtons() {
       if (currentRoundIndex >= SCHED.m.length) currentRoundIndex = 0;
-      if (document.querySelectorAll('.round-btn').length !== SCHED.m.length) buildRoundButtons();
+      buildRoundButtons();
     }
 
     async function writeNames() {
@@ -427,51 +610,66 @@
       const data = { men: grp('m'), women: grp('w') };
       if (!CLOUD) { localStorage.setItem('pb_names', JSON.stringify(data)); return true; }
       try {
-        const r = await fetch(`${FIREBASE_URL}/names.json`, { method: 'PUT', body: JSON.stringify(data) });
-        if (!r.ok) throw new Error();
+        const r = await fb('names', 'PUT', JSON.stringify(data));
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         setSync(true);
         return true;
-      } catch (e) { setSync(false); return false; }
+      } catch (e) { setSync(false, e.message); return false; }
     }
 
     async function writePinHash(h) {
       pinHash = h;
       if (!CLOUD) { localStorage.setItem('pb_pin_hash', h); return true; }
-      try {
-        const r = await fetch(`${FIREBASE_URL}/pin.json`, { method: 'PUT', body: JSON.stringify(h) });
-        if (!r.ok) throw new Error();
-        return true;
-      } catch (e) { return false; }
+      try { const r = await fb('pin', 'PUT', JSON.stringify(h)); return r.ok; } catch (e) { return false; }
     }
 
     // ---------- init + polling ----------
     async function initApp() {
+      loadMe();
       buildRoundButtons();
       if (!CLOUD) document.getElementById('offline-banner').classList.remove('hidden');
       await loadData();
+      if (liveRound !== null) currentRoundIndex = liveRound;
       syncRoundButtons();
       applyModeUI();
       renderStandings();
       renderMatches();
       renderPlayoffs();
       renderNamesEditor();
+      renderLiveStrip();
       if (CLOUD) setInterval(pollRefresh, POLL_MS);
     }
 
     async function pollRefresh() {
       if (document.hidden || generating) return;
+      if (currentMode === 'scorekeeper') await flushUnsynced();
+      const before = liveRound;
       await loadData();
       if (generating) return;
+      // spectators follow the live round if they were watching the previous one
+      if (currentMode === 'spectator' && liveRound !== null && liveRound !== before && currentRoundIndex === before) currentRoundIndex = liveRound;
       syncRoundButtons();
       renderStandings();
+      renderLiveStrip();
       // Don't wipe inputs while the scorekeeper is typing
-      if (currentMode === 'spectator') { renderMatches(); renderPlayoffs(); } else updateMedalTeams();
+      if (currentMode === 'spectator') { renderMatches(); renderPlayoffs(); }
+      else { updateMedalTeams(); await loadCheckins(); renderCheckins(); }
+    }
+
+    function roundDone(r) {
+      return ['m', 'w'].every(g => SCHED[g][r].m.every((_, i) => {
+        const sc = matchScores[`${g}_r${r}_m${i}`];
+        return sc && sc.s1 !== '' && sc.s2 !== '' && sc.s1 != null && sc.s2 != null;
+      }));
     }
 
     function buildRoundButtons() {
-      document.getElementById('round-buttons').innerHTML = SCHED.m.map((_, i) =>
-        `<button onclick="selectRound(${i})" class="round-btn px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${i === currentRoundIndex ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">R${i + 1}</button>`
-      ).join('');
+      const box = document.getElementById('round-buttons');
+      if (!box) return;
+      box.innerHTML = SCHED.m.map((_, i) => {
+        const on = i === currentRoundIndex, isLive = i === liveRound;
+        return `<button onclick="selectRound(${i})" class="round-btn px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${on ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'} ${isLive ? 'ring-2 ring-rose-400' : ''}">${isLive ? '🔴 ' : ''}R${i + 1}${roundDone(i) ? ' ✓' : ''}</button>`;
+      }).join('');
     }
 
     function applyModeUI() {
@@ -492,6 +690,7 @@
         setNamesTabVisible(true);
       }
       renderStandings(); // show/hide skill tags
+      updateUndoUI(); renderLiveStrip();
     }
 
     function setNamesTabVisible(show) {
@@ -534,6 +733,7 @@
     function onAuthButton() {
       if (currentMode === 'scorekeeper') {
         currentMode = 'spectator';
+        if (SECURE && AUTH) fb(`admins/${AUTH.uid}`, 'PUT', 'null').catch(() => {}); // drop this phone's admin rights
         applyModeUI(); renderMatches(); renderPlayoffs();
         showToast('Switched to Spectator View');
       } else {
@@ -554,13 +754,28 @@
         if (ok) { closeAuthModal(); showToast('PIN changed!'); }
         else showPinError('Could not save PIN. Check your connection.');
       } else {
-        await loadData(); // get latest PIN from cloud
-        const expected = pinHash || await sha256(DEFAULT_PIN);
-        if ((await sha256(input)) === expected) {
+        let pinOk = false;
+        if (SECURE) {
+          // the database itself checks the PIN: only the right hash is allowed to become an admin
+          const h = await sha256(input);
+          const t = await ensureAuth();
+          if (!t) { showPinError('Could not sign in. In Firebase turn on Authentication → Anonymous.'); return; }
+          try {
+            const r = await fetch(`${FIREBASE_URL}/admins/${AUTH.uid}.json?auth=${encodeURIComponent(t)}`, { method: 'PUT', body: JSON.stringify(h) });
+            pinOk = r.ok;
+            if (!pinOk && r.status !== 401 && r.status !== 403) { showPinError('Server error (' + r.status + ')'); return; }
+          } catch (e) { showPinError('Connection problem. Please try again.'); return; }
+          await loadData();
+        } else {
+          await loadData(); // get latest PIN from cloud
+          const expected = pinHash || await sha256(DEFAULT_PIN);
+          pinOk = (await sha256(input)) === expected;
+        }
+        if (pinOk) {
           currentMode = 'scorekeeper';
           applyModeUI(); renderMatches(); renderPlayoffs();
           closeAuthModal();
-          renderNamesEditor(); showToast('Unlocked Scorekeeper Mode!');
+          await loadCheckins(); renderNamesEditor(); showToast('Unlocked Scorekeeper Mode!');
         } else {
           showPinError('Incorrect PIN.');
         }
@@ -588,6 +803,13 @@
       const sel = document.getElementById('rounds-select');
       if ([...sel.options].some(o => o.value === String(SCHED.m.length))) sel.value = String(SCHED.m.length);
       updateRoundsHint();
+      renderCheckins();
+      const sn = document.getElementById('security-note');
+      if (sn) {
+        sn.classList.toggle('hidden', !CLOUD);
+        sn.className = 'text-[11px] font-semibold rounded-lg p-2 ' + (SECURE ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300' : 'bg-amber-500/10 border border-amber-500/30 text-amber-300') + (CLOUD ? '' : ' hidden');
+        sn.innerText = SECURE ? '🔒 Secure mode is on: only a scorekeeper who entered the PIN can change data.' : '🔓 Open mode: anyone with the database link could change scores. Turn on secure mode (add your Firebase Web API Key and publish the rules).';
+      }
     }
 
     function readEditor() {
@@ -637,6 +859,199 @@
       await afterRosterChange('✓ Player removed — generate a new schedule');
     }
 
+    // ---------- check-in: scorekeeper side ----------
+    async function loadCheckins() {
+      if (!CLOUD) return;
+      try {
+        const [cRes, oRes] = await Promise.all([fb('checkins'), fb('checkin_open')]);
+        if (cRes.ok) CHECKINS = (await cRes.json()) || {};
+        if (oRes.ok) checkinOpen = (await oRes.json()) !== false;
+      } catch (e) { /* keep last known list */ }
+    }
+
+    const pendingCheckins = () => Object.entries(CHECKINS)
+      .filter(([, c]) => c && typeof c === 'object' && String(c.name || '').trim())
+      .map(([id, c]) => ({ id, name: String(c.name).trim().slice(0, 20), gender: c.gender === 'w' ? 'w' : 'm', skill: [1,2,3,4].includes(Number(c.skill)) ? Number(c.skill) : 3, ts: Number(c.ts) || 0 }))
+      .sort((a, b) => a.ts - b.ts);
+
+    function renderCheckins() {
+      const box = document.getElementById('checkin-list');
+      if (!box) return;
+      const items = pendingCheckins();
+      const keep = {};
+      items.forEach(c => { const el = document.getElementById('ci_skill_' + c.id); if (el) keep[c.id] = Number(el.value); });
+      document.getElementById('checkin-toggle').innerText = checkinOpen ? '🟢 Check-in open (tap to close)' : '🔴 Check-in closed (tap to open)';
+      box.innerHTML = items.length ? items.map(c => `
+        <div class="flex items-center gap-2 flex-wrap bg-slate-800/80 border border-slate-700 rounded-lg p-2">
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${c.gender === 'm' ? 'bg-sky-500/20 text-sky-300' : 'bg-pink-500/20 text-pink-300'}">${c.gender === 'm' ? 'MEN' : 'WOMEN'}</span>
+          <span class="flex-1 min-w-[6rem] text-sm font-bold text-white">${esc(c.name)}</span>
+          <select id="ci_skill_${c.id}" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
+            ${[1,2,3,4].map(l => `<option value="${l}" ${(keep[c.id] || c.skill) === l ? 'selected' : ''}>${SKILLS[l].label}</option>`).join('')}
+          </select>
+          <button onclick="approveCheckin('${c.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition">＋ Add</button>
+          <button onclick="dismissCheckin('${c.id}')" title="Dismiss" class="w-8 h-8 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold">✕</button>
+        </div>`).join('') + (items.length > 1 ? `<button onclick="approveAllCheckins()" class="w-full py-2 text-xs font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300">＋ Add all ${items.length} players</button>` : '')
+        : '<p class="text-xs text-slate-500">No one waiting. Show the QR code so players can check in.</p>';
+      // badge on the Players tab
+      const n = items.length, badge = n ? ` <span class="ml-1 px-1.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold">${n}</span>` : '';
+      document.getElementById('tab-btn-names').innerHTML = '✏️ Players &amp; Skills' + badge;
+      document.getElementById('mob-btn-names').lastElementChild.innerHTML = 'Players' + badge;
+    }
+
+    async function removeCheckinRemote(id) {
+      if (!CLOUD) return true;
+      try { const r = await fb(`checkins/${id}`, 'PUT', 'null'); return r.ok; } catch (e) { return false; }
+    }
+
+    // Adds one waiting player to the roster. Returns true if added.
+    async function addCheckinToRoster(id) {
+      const c = pendingCheckins().find(x => x.id === id);
+      if (!c) return false;
+      const g = c.gender, L = live(g);
+      if (L.ids.includes(id)) { delete CHECKINS[id]; return false; }
+      if (L.names.length >= MAX_PLAYERS) { showToast(`${g === 'm' ? 'Men' : 'Women'} group is full (${MAX_PLAYERS})`, true); return false; }
+      const sel = document.getElementById('ci_skill_' + id);
+      L.ids.push(id); L.names.push(c.name); L.skills.push(sel ? Number(sel.value) : c.skill);
+      delete CHECKINS[id];
+      await removeCheckinRemote(id);
+      return true;
+    }
+
+    async function approveCheckin(id) {
+      if (currentMode !== 'scorekeeper') return;
+      readEditor();
+      if (await addCheckinToRoster(id)) await afterRosterChange('✓ Player added — generate a new schedule');
+      else renderCheckins();
+    }
+
+    async function approveAllCheckins() {
+      if (currentMode !== 'scorekeeper') return;
+      readEditor();
+      let added = 0;
+      for (const c of pendingCheckins()) { if (await addCheckinToRoster(c.id)) added++; }
+      if (added) await afterRosterChange(`✓ ${added} player${added > 1 ? 's' : ''} added — generate a new schedule`);
+      else renderCheckins();
+    }
+
+    async function dismissCheckin(id) {
+      if (currentMode !== 'scorekeeper') return;
+      delete CHECKINS[id];
+      renderCheckins();
+      await removeCheckinRemote(id);
+    }
+
+    async function toggleCheckinOpen() {
+      if (currentMode !== 'scorekeeper') return;
+      checkinOpen = !checkinOpen;
+      renderCheckins();
+      if (CLOUD) { try { await fb('checkin_open', 'PUT', JSON.stringify(checkinOpen)); } catch (e) {} }
+      showToast(checkinOpen ? 'Check-in is open' : 'Check-in is closed');
+    }
+
+    // ---------- check-in: player side (opened from the check-in QR) ----------
+    const ci = { gender: '', skill: 0 };
+    const CI_LEVELS = {
+      1: ['Beginner', 'Just learning the game'],
+      2: ['Low-Inter', 'Know the rules, still building consistency'],
+      3: ['High-Inter', 'Consistent rallies, playing with strategy'],
+      4: ['Advanced', 'Competitive, strong all-round player']
+    };
+    const ciSet = html => { document.getElementById('checkin-inner').innerHTML = html; };
+    const ciHeader = sub => `<div class="text-center space-y-2 pt-4">
+        <div class="inline-block bg-gradient-to-br from-emerald-400 to-teal-600 p-3 rounded-2xl text-slate-950 font-black text-2xl leading-none">PB</div>
+        <h1 class="text-2xl font-extrabold text-white">Player Check-in</h1>
+        <p class="text-sm text-slate-400">${sub}</p></div>`;
+    const ciScoreboardBtn = (label) => `<a href="${baseUrl()}" class="block w-full text-center py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-sm transition">${label}</a>`;
+
+    async function initCheckin() {
+      document.getElementById('checkin-view').classList.remove('hidden');
+      if (!CLOUD) { ciSet(ciHeader('Pickleball Mini-Tourna') + '<p class="text-sm text-rose-300 text-center">Check-in needs cloud sync to be set up. Please tell the organizer.</p>'); return; }
+      ciSet(ciHeader('Loading…'));
+      try {
+        const r = await fb('checkin_open');
+        if (r.ok && (await r.json()) === false) {
+          ciSet(ciHeader('Pickleball Mini-Tourna') + '<p class="text-sm text-amber-300 text-center">Check-in is closed right now. Ask the organizer if you want to join.</p>' + ciScoreboardBtn('View live scoreboard'));
+          return;
+        }
+      } catch (e) { /* if this fails, still show the form */ }
+      renderCheckinForm();
+    }
+
+    function renderCheckinForm() {
+      ci.gender = ''; ci.skill = 0;
+      let me = null;
+      try { me = JSON.parse(localStorage.getItem('pb_checkin_me') || 'null'); } catch (e) {}
+      ciSet(ciHeader('Pickleball Mini-Tourna') + `
+        ${me ? `<div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-xs text-emerald-200">This phone already checked in as <b>${esc(me.name)}</b>. Checking in someone else? Fill in the form below, or <a class="underline font-bold" href="${baseUrl()}">view the scoreboard</a>.</div>` : ''}
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Your name</label>
+          <input id="ci-name" type="text" maxlength="20" placeholder="e.g. Alex" autocomplete="off" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">I play in the</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" data-g="m" onclick="ciPick('gender','m')" class="ci-g py-3 rounded-xl border border-slate-700 bg-slate-800 text-sm font-bold text-slate-300">👨 Men's group</button>
+            <button type="button" data-g="w" onclick="ciPick('gender','w')" class="ci-g py-3 rounded-xl border border-slate-700 bg-slate-800 text-sm font-bold text-slate-300">👩 Women's group</button>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Your skill level</label>
+          <div class="space-y-2">
+            ${[1,2,3,4].map(l => `<button type="button" data-l="${l}" onclick="ciPick('skill',${l})" class="ci-l w-full text-left px-4 py-3 rounded-xl border border-slate-700 bg-slate-800">
+              <div class="text-sm font-bold text-white">${CI_LEVELS[l][0]}</div><div class="text-xs text-slate-400">${CI_LEVELS[l][1]}</div></button>`).join('')}
+          </div>
+        </div>
+        <p id="ci-error" class="hidden text-sm font-semibold text-rose-300"></p>
+        <button id="ci-submit" type="button" onclick="submitCheckin()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-base transition">Check in</button>
+        <p class="text-[11px] text-slate-500 text-center pb-6">After checking in you'll go straight to the live scoreboard.</p>`);
+    }
+
+    function ciPick(kind, val) {
+      ci[kind] = val;
+      const on = 'border-emerald-400 bg-emerald-500/15 ring-2 ring-emerald-400/60';
+      document.querySelectorAll(kind === 'gender' ? '.ci-g' : '.ci-l').forEach(b => {
+        const sel = (kind === 'gender' ? b.dataset.g : Number(b.dataset.l)) === val;
+        on.split(' ').forEach(c => b.classList.toggle(c, sel));
+        b.classList.toggle('border-slate-700', !sel);
+        b.classList.toggle('bg-slate-800', !sel);
+      });
+    }
+
+    function ciError(msg) { const el = document.getElementById('ci-error'); el.innerText = msg; el.classList.toggle('hidden', !msg); }
+
+    async function submitCheckin() {
+      const name = document.getElementById('ci-name').value.trim().replace(/\s+/g, ' ');
+      if (!name) return ciError('Please enter your name.');
+      if (!ci.gender) return ciError('Please pick Men\'s or Women\'s group.');
+      if (!ci.skill) return ciError('Please pick your skill level.');
+      ciError('');
+      const btn = document.getElementById('ci-submit');
+      btn.disabled = true; btn.innerText = 'Checking in…';
+      try {
+        // already on the list? (same name, same group)
+        const [nRes, cRes] = await Promise.all([fb('names'), fb('checkins')]);
+        const key = t => String(t).trim().toLowerCase();
+        const nd = nRes.ok ? await nRes.json() : null;
+        const g = ci.gender === 'm' ? parseGroup(nd && nd.men, null, DEFAULT_MEN, 'm') : parseGroup(nd && nd.women, null, DEFAULT_WOMEN, 'w');
+        const waiting = cRes.ok ? Object.values((await cRes.json()) || {}) : [];
+        const dupe = g.names.some(n => key(n) === key(name)) || waiting.some(c => c && c.gender === ci.gender && key(c.name) === key(name));
+        if (dupe) {
+          ciError(`Someone named "${name}" is already on the list. If that's you, you're all set. If it's a different person, add a last initial.`);
+          btn.disabled = false; btn.innerText = 'Check in';
+          return;
+        }
+        const id = newId();
+        const r = await fb(`checkins/${id}`, 'PUT', JSON.stringify({ name, gender: ci.gender, skill: ci.skill, ts: Date.now() }), { auth: false });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        try { localStorage.setItem('pb_checkin_me', JSON.stringify({ id, name, g: ci.gender })); } catch (e) {}
+        ciSet(ciHeader('You\'re checked in! ✅') + `<p class="text-center text-sm text-slate-300">Welcome, <b>${esc(name)}</b>. The organizer will add you to the schedule.</p><p class="text-center text-xs text-slate-500">Taking you to the live scoreboard…</p>` + ciScoreboardBtn('Go now'));
+        setTimeout(() => { window.location.href = baseUrl(); }, 2000);
+      } catch (e) {
+        ciError('Could not check in (' + e.message + '). Please try again.');
+        btn.disabled = false; btn.innerText = 'Check in';
+      }
+    }
+
     // ---------- balanced schedule generator ----------
     // Equal games need N x g divisible by 4 (4 players per match). We pick the largest g that fits
     // in the chosen rounds with at most 2 matches per round (and 1 match per player per round).
@@ -647,9 +1062,11 @@
       let g = Math.floor(Math.min((4 * c * R) / N, R) / step) * step;
       if (g < step) g = step;
       const M = (N * g) / 4;
-      const nms = Array.from({length: R}, (_, r) => Math.floor((r + 1) * M / R) - Math.floor(r * M / R));
+      // never plan empty rounds: if there are fewer matches than rounds, only use as many rounds as needed
+      const rounds = Math.max(1, Math.min(R, M));
+      const nms = Array.from({length: rounds}, (_, r) => Math.floor((r + 1) * M / rounds) - Math.floor(r * M / rounds));
       const light = nms.filter(x => x < c).length;
-      return { g, M, c, nms, light, ok: M <= c * R && g <= R };
+      return { g, M, c, nms, light, rounds, ok: M <= c * R && g <= R };
     }
 
     function updateRoundsHint() {
@@ -657,7 +1074,7 @@
       if (!el) return;
       const R = parseInt(document.getElementById('rounds-select').value);
       const a = planRounds(R, mensPlayers.length), b = planRounds(R, womensPlayers.length);
-      const part = (label, n, p) => p.ok ? `${label} (${n} players): everyone plays ${p.g} games.` : `${label} (${n} players): equal games aren't possible in ${R} rounds — choose more rounds.`;
+      const part = (label, n, p) => p.ok ? `${label} (${n} players): everyone plays ${p.g} games${p.rounds < R ? ` (only needs ${p.rounds} rounds)` : ''}.` : `${label} (${n} players): equal games aren't possible in ${R} rounds — choose more rounds.`;
       el.innerText = part('Men', mensPlayers.length, a) + ' ' + part('Women', womensPlayers.length, b) +
         ((a.ok && b.ok && (a.light || b.light)) ? ' In some rounds not every court is used so game counts stay equal.' : '');
       const note = document.getElementById('roster-note');
@@ -672,7 +1089,9 @@
 
     function genSchedule(skills, R) {
       const N = skills.length;
-      const { g, nms } = planRounds(R, N);
+      const plan = planRounds(R, N);
+      const { g, nms } = plan;
+      R = plan.rounds;
       const cost = S => {
         const games = new Array(N).fill(0), part = new Array(N * N).fill(0), opp = new Array(N * N).fill(0);
         let c = 0, prevRest = null;
@@ -757,36 +1176,43 @@
       readEditor();
       const pm = planRounds(R, mensPlayers.length), pw = planRounds(R, womensPlayers.length);
       if (!pm.ok || !pw.ok) { showToast(`Equal games aren't possible with this many players in ${R} rounds — pick more rounds`, true); return; }
-      if (!confirm(`Generate a new ${R}-round balanced schedule?\n\nMen: ${mensPlayers.length} players, ${pm.g} games each\nWomen: ${womensPlayers.length} players, ${pw.g} games each\n\nThis clears ALL current scores (groups and playoffs).`)) return;
+      if (!confirm(`Generate a new ${R}-round balanced schedule?\n\nMen: ${mensPlayers.length} players, ${pm.g} games each (${pm.rounds} rounds)\nWomen: ${womensPlayers.length} players, ${pw.g} games each (${pw.rounds} rounds)\n\nThis clears ALL current scores (groups and playoffs).`)) return;
       generating = true;
       try {
         showToast('Generating…');
         await new Promise(r => setTimeout(r, 40));
         const gm = genSchedule(mensSkill, R), gw = genSchedule(womensSkill, R);
+        // both groups share the round list: a group that finishes early just rests in the extra rounds
+        const Rtot = Math.max(gm.sched.length, gw.sched.length);
+        const pad = (sched, n) => { while (sched.length < Rtot) sched.push({ rest: Array.from({length: n}, (_, i) => i), m: [] }); };
+        pad(gm.sched, mensSkill.length); pad(gw.sched, womensSkill.length);
         const cp = g => { const L = live(g); return { ids: L.ids.slice(), names: L.names.slice(), skills: L.skills.slice() }; };
         const payload = { m: gm.sched, w: gw.sched, snap: { m: cp('m'), w: cp('w') } };
         let ok = true, err = '';
         if (!CLOUD) {
           localStorage.setItem('pb_schedule', JSON.stringify(payload));
           localStorage.setItem('pb_scores_v2', '{}');
+          localStorage.removeItem('pb_live');
           await writeNames();
         } else {
           try {
-            const put = async (p, body) => { const r = await fetch(`${FIREBASE_URL}/${p}.json`, { method: 'PUT', body }); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); };
+            const put = async (p, body) => { const r = await fb(p, 'PUT', body); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); };
             await put('schedule', JSON.stringify(payload));
             await put('scores_v2', 'null');
+            await put('live', 'null');
             if (!(await writeNames())) throw new Error('players not saved');
-            const chk = await (await fetch(`${FIREBASE_URL}/schedule.json`, {cache: 'no-store'})).json();
-            if (!chk || !chk.m || chk.m.length !== R) throw new Error('schedule did not save');
+            const chk = await (await fb('schedule')).json();
+            if (!chk || !chk.m || chk.m.length !== Rtot) throw new Error('schedule did not save');
           } catch (e) { ok = false; err = e.message; setSync(false, err); }
         }
         SCHED = { m: payload.m, w: payload.w };
         SNAP = payload.snap;
         matchScores = {};
+        liveRound = null; undoStack = []; Object.keys(unsynced).forEach(k => delete unsynced[k]);
         currentRoundIndex = 0;
-        buildRoundButtons();
+        buildRoundButtons(); updateUndoUI(); updateUnsyncedUI(); renderLiveStrip();
         renderStandings(); renderMatches(); renderPlayoffs(); updateRoundsHint();
-        showToast(ok ? `✓ ${R}-round schedule ready · biggest team gap: men ${gm.maxGap}, women ${gw.maxGap}` : `Save failed (${err})`, !ok);
+        showToast(ok ? `✓ ${Rtot}-round schedule ready · biggest team gap: men ${gm.maxGap}, women ${gw.maxGap}` : `Save failed (${err})`, !ok);
       } catch (e) {
         showToast('Error: ' + e.message, true);
       } finally {
@@ -811,10 +1237,7 @@
 
     function selectRound(rIdx) {
       currentRoundIndex = rIdx;
-      document.querySelectorAll('.round-btn').forEach((btn, idx) => {
-        btn.className = "round-btn px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 " +
-          (idx === rIdx ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20" : "bg-slate-800 text-slate-400 hover:bg-slate-700");
-      });
+      buildRoundButtons();
       renderMatches();
     }
 
@@ -836,56 +1259,211 @@
       return stats;
     }
 
+    function nameBtn(g, i) {
+      const A = active(g);
+      const mine = ME && A.ids[i] === ME.id;
+      return `<button type="button" onclick="openPlayerCard('${g}', ${i})" class="hover:underline text-left">${mine ? '⭐ ' : ''}${esc(A.names[i])}</button>`;
+    }
+
     function renderStandings() {
-      const renderBody = (id, data, skills) => {
+      const renderBody = (id, data, A, g) => {
         document.getElementById(id).innerHTML = data.map((p, idx) => `
           <tr class="${idx < 4 ? 'bg-emerald-500/10 font-bold' : ''}">
             <td class="py-2.5 px-1 font-mono text-slate-400">${idx + 1}</td>
-            <td class="py-2.5 px-2"><span class="text-white">${esc(p.name)}</span>${skillTag(skills[p.idx])}${idx < 4 ? '<span class="ml-1 text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded">QUAL</span>' : ''}</td>
+            <td class="py-2.5 px-2"><span class="text-white">${nameBtn(g, p.idx)}</span>${skillTag(A.skills[p.idx])}${idx < 4 ? '<span class="ml-1 text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded">QUAL</span>' : ''}</td>
             <td class="py-2.5 px-2 text-center font-mono text-slate-300">${p.wins}-${p.losses}</td>
             <td class="py-2.5 px-2 text-center font-mono ${p.diff > 0 ? 'text-emerald-400' : p.diff < 0 ? 'text-rose-400' : 'text-slate-400'}">${p.diff > 0 ? '+' : ''}${p.diff}</td>
             <td class="py-2.5 px-2 text-center font-mono text-white">${p.pointsScored}</td>
           </tr>`).join('');
       };
       const am = active('m'), aw = active('w');
-      renderBody('mens-standings-body', calculateStats(am.names, 'm'), am.skills);
-      renderBody('womens-standings-body', calculateStats(aw.names, 'w'), aw.skills);
+      renderBody('mens-standings-body', calculateStats(am.names, 'm'), am, 'm');
+      renderBody('womens-standings-body', calculateStats(aw.names, 'w'), aw, 'w');
+    }
+
+    // ---------- live round ----------
+    async function setLive(idx) {
+      if (currentMode !== 'scorekeeper') return;
+      liveRound = idx;
+      const val = idx === null ? null : { round: idx, ts: Date.now() };
+      let ok = true;
+      if (!CLOUD) localStorage.setItem('pb_live', JSON.stringify(val));
+      else { try { const r = await fb('live', 'PUT', JSON.stringify(val)); ok = r.ok; setSync(r.ok, 'HTTP ' + r.status); } catch (e) { ok = false; setSync(false, e.message); } }
+      buildRoundButtons(); renderLiveStrip(); renderMatches();
+      showToast(ok ? (idx === null ? 'Live round cleared' : `🔴 Round ${idx + 1} is live`) : 'Save failed — check connection', !ok);
+    }
+    async function advanceLive() {
+      if (liveRound === null || liveRound + 1 >= SCHED.m.length) return;
+      await setLive(liveRound + 1);
+      selectRound(liveRound);
+    }
+    function goLive() {
+      if (liveRound === null) return;
+      switchTab('matches');
+      selectRound(liveRound);
+    }
+
+    function describeRow(row) {
+      return row.plays ? `with ${row.partner.join(' & ') || '—'} vs ${row.opps.join(' & ')}` : `resting${row.mates.length ? ' with ' + row.mates.join(', ') : ''}`;
+    }
+
+    function renderLiveStrip() {
+      const el = document.getElementById('live-strip');
+      if (!el) return;
+      if (liveRound === null) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+      const total = SCHED.m.length, me = meSummary();
+      el.innerHTML = `<button onclick="goLive()" class="w-full text-left bg-rose-500/10 border border-rose-500/40 hover:bg-rose-500/15 rounded-xl px-4 py-2.5 transition">
+        <div class="flex flex-wrap items-center gap-x-2 text-sm"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse flex-shrink-0"></span>
+          <span class="font-extrabold text-rose-300">NOW PLAYING · Round ${liveRound + 1} of ${total}</span>
+          <span class="text-xs text-slate-400">${liveRound + 1 < total ? '· Up next: Round ' + (liveRound + 2) : '· Final round'}</span></div>
+        ${me ? `<div class="text-xs text-emerald-300 mt-1 font-semibold">${me}</div>` : ''}</button>`;
+      el.classList.remove('hidden');
+    }
+
+    // ---------- player view ----------
+    function loadMe() {
+      try {
+        const a = JSON.parse(localStorage.getItem('pb_me') || 'null');
+        const b = JSON.parse(localStorage.getItem('pb_checkin_me') || 'null');
+        if (a && a.off) ME = null;
+        else if (a && a.id) ME = a;
+        else if (b && b.id) ME = { g: b.g || null, id: b.id };
+        else ME = null;
+      } catch (e) { ME = null; }
+    }
+    function meIndex() {
+      if (!ME) return null;
+      for (const g of ['m', 'w']) {
+        if (ME.g && ME.g !== g) continue;
+        const i = active(g).ids.indexOf(ME.id);
+        if (i >= 0) return { g, i };
+      }
+      return null;
+    }
+
+    function playerRows(g, i) {
+      const A = active(g);
+      return SCHED[g].map((rd, r) => {
+        const mi = rd.m.findIndex(m => m.t1.includes(i) || m.t2.includes(i));
+        if (mi < 0) return { r, plays: false, mates: rd.rest.filter(x => x !== i).map(x => A.names[x]) };
+        const m = rd.m[mi], inT1 = m.t1.includes(i);
+        const mine = inT1 ? m.t1 : m.t2, theirs = inT1 ? m.t2 : m.t1;
+        const sc = matchScores[`${g}_r${r}_m${mi}`];
+        const scored = !!(sc && sc.s1 !== '' && sc.s2 !== '' && sc.s1 != null && sc.s2 != null);
+        let res = null;
+        if (scored) { const a = parseInt(sc.s1) || 0, b = parseInt(sc.s2) || 0; const my = inT1 ? a : b, op = inT1 ? b : a; res = { win: my > op, tie: my === op, my, op }; }
+        return { r, plays: true, mi, partner: mine.filter(x => x !== i).map(x => A.names[x]), opps: theirs.map(x => A.names[x]), scored, res };
+      });
+    }
+
+    function startRound() {
+      if (liveRound !== null) return liveRound;
+      const f = SCHED.m.findIndex((_, r) => !roundDone(r));
+      return f < 0 ? 0 : f;
+    }
+
+    function meSummary() {
+      const me = meIndex();
+      if (!me) return '';
+      const A = active(me.g), rows = playerRows(me.g, me.i), start = startRound();
+      const row = rows.find(x => x.r >= start && (!x.plays || !x.scored));
+      if (!row) return `⭐ ${esc(A.names[me.i])} — all your matches are done`;
+      const tag = row.r === liveRound ? 'NOW' : (liveRound !== null && row.r === liveRound + 1) ? 'UP NEXT' : 'Next';
+      return `⭐ ${esc(A.names[me.i])} · ${tag} (Round ${row.r + 1}): ${esc(describeRow(row))}`;
+    }
+
+    function openPlayerCard(g, i) {
+      const A = active(g), name = A.names[i];
+      if (name === undefined) return;
+      const rows = playerRows(g, i), start = startRound();
+      const stats = calculateStats(A.names, g), rank = stats.findIndex(s => s.idx === i) + 1, st = stats[rank - 1];
+      const upcoming = rows.find(x => x.r >= start && (!x.plays || !x.scored));
+      const nextRest = rows.find(x => x.r >= start && !x.plays);
+      const isMe = !!(ME && ME.id === A.ids[i]);
+      const nextBox = upcoming ? `<div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 space-y-1">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">${upcoming.r === liveRound ? '🔴 Happening now' : '▶ Up next'} · Round ${upcoming.r + 1}</div>
+          <div class="text-sm text-white font-semibold">${upcoming.plays ? `Partner: ${esc(upcoming.partner.join(' & '))}<br><span class="text-slate-300 font-normal">vs ${esc(upcoming.opps.join(' & '))}</span>` : `😴 Resting${upcoming.mates.length ? ' with ' + esc(upcoming.mates.join(', ')) : ''}`}</div>
+          ${nextRest && nextRest.r !== upcoming.r ? `<div class="text-xs text-amber-300">Next rest: Round ${nextRest.r + 1}${nextRest.mates.length ? ' with ' + esc(nextRest.mates.join(', ')) : ''}</div>` : ''}
+        </div>` : `<div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3 text-sm text-slate-300">🎉 No more group matches for ${esc(name)}.</div>`;
+      const list = rows.map(row => {
+        const isLive = row.r === liveRound, isNext = liveRound !== null && row.r === liveRound + 1;
+        const badge = isLive ? '<span class="px-1.5 rounded bg-rose-500 text-white text-[9px] font-bold">LIVE</span>' : isNext ? '<span class="px-1.5 rounded bg-amber-500 text-slate-950 text-[9px] font-bold">NEXT</span>' : '';
+        const result = row.plays && row.scored ? `<span class="font-mono text-xs font-bold ${row.res.win ? 'text-emerald-400' : row.res.tie ? 'text-slate-400' : 'text-rose-400'}">${row.res.win ? 'W' : row.res.tie ? 'T' : 'L'} ${row.res.my}–${row.res.op}</span>` : '';
+        const text = row.plays
+          ? `<span class="text-slate-400">with</span> <b>${esc(row.partner.join(' & '))}</b> <span class="text-slate-400">vs</span> ${esc(row.opps.join(' & '))}`
+          : `😴 Resting${row.mates.length ? ' <span class="text-slate-400">with</span> ' + esc(row.mates.join(', ')) : ''}`;
+        return `<div class="flex items-start gap-2 py-2 border-b border-slate-700/40 ${isLive ? 'bg-rose-500/10 -mx-2 px-2 rounded' : ''}">
+          <div class="w-8 text-xs font-bold text-slate-400 pt-0.5">R${row.r + 1}</div>
+          <div class="flex-1 text-sm ${row.plays ? 'text-white' : 'text-amber-300'}">${text}</div>
+          <div class="flex flex-col items-end gap-1">${badge}${result}</div></div>`;
+      }).join('');
+      document.getElementById('player-card').innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div><div class="text-xl font-extrabold text-white">${esc(name)}${skillTag(A.skills[i])}</div>
+            <div class="text-xs text-slate-400 mt-0.5">${g === 'm' ? "Men's" : "Women's"} group · #${rank} · ${st.wins}-${st.losses} · ${st.diff > 0 ? '+' : ''}${st.diff} pts diff</div></div>
+          <button onclick="closePlayerCard()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold flex-shrink-0">✕</button>
+        </div>
+        ${nextBox}
+        <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">All rounds</div>${list}</div>
+        <button onclick="toggleMe('${g}', '${A.ids[i]}')" class="w-full py-2.5 rounded-xl text-xs font-bold ${isMe ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 hover:bg-slate-600 text-white'}">${isMe ? '⭐ This is me (tap to undo)' : '⭐ This is me — highlight my games'}</button>`;
+      document.getElementById('player-modal').classList.remove('hidden');
+    }
+    function closePlayerCard() { document.getElementById('player-modal').classList.add('hidden'); }
+    function toggleMe(g, id) {
+      const same = ME && ME.id === id;
+      ME = same ? null : { g, id };
+      try { localStorage.setItem('pb_me', JSON.stringify(same ? { off: true } : ME)); } catch (e) {}
+      closePlayerCard();
+      renderStandings(); renderMatches(); renderLiveStrip();
+      showToast(same ? 'Cleared' : '⭐ Got it — your games are highlighted');
     }
 
     // ---------- matches ----------
     function renderMatches() {
       const r = currentRoundIndex;
-      const rn = (names, idxs) => idxs.length ? idxs.map(i => esc(names[i])).join(' &amp; ') : '—';
-      let html = currentMode === 'scorekeeper' ? `<div class="md:col-span-2 flex justify-end">
+      const me = meIndex();
+      const rn = (g, idxs) => idxs.length ? idxs.map(i => nameBtn(g, i)).join(' &amp; ') : '—';
+      let html = '';
+      if (liveRound !== null && r === liveRound) html += `<div class="md:col-span-2 flex items-center gap-2 text-sm font-extrabold text-rose-300"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> LIVE NOW</div>`;
+      else if (liveRound !== null && r === liveRound + 1) html += `<div class="md:col-span-2 text-sm font-extrabold text-amber-300">⏭ UP NEXT</div>`;
+      if (currentMode === 'scorekeeper') html += `<div class="md:col-span-2 flex flex-wrap justify-between gap-2">
+        <div class="flex flex-wrap gap-2">
+          ${r === liveRound
+            ? `<button onclick="setLive(null)" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">⏹ End live round</button>`
+            : `<button onclick="setLive(${r})" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-500 hover:bg-rose-400 text-white transition">🔴 Make Round ${r + 1} live</button>`}
+          ${liveRound !== null && liveRound + 1 < SCHED.m.length ? `<button onclick="advanceLive()" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 transition">⏭ Start Round ${liveRound + 2}</button>` : ''}
+        </div>
         <button onclick="resetRound()" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition">🗑️ Reset Round ${r + 1} Scores</button>
-      </div>` : '';
+      </div>`;
       if (currentMode === 'scorekeeper' && scheduleStale()) html += `<div class="md:col-span-2 bg-rose-500/10 border border-rose-500/40 rounded-xl p-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <span class="text-rose-200 font-semibold">${rosterChanged() ? '⚠️ Players were added or removed. The matches below still use the previous roster — generate a new schedule to include the changes.' : '⚠️ This schedule was not balanced for the current skill levels, so matches may be unfair.'}</span>
         <button onclick="switchTab('names')" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs rounded-lg transition flex-shrink-0">Go to Players &amp; Skills → Generate</button>
       </div>`;
       html += `<div class="md:col-span-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:gap-6 gap-1">
         <span class="font-bold text-amber-400">😴 Resting this round</span>
-        <span><span class="text-sky-400 font-bold">Men:</span> <span class="text-white font-semibold">${rn(active('m').names, SCHED.m[r].rest)}</span></span>
-        <span><span class="text-pink-400 font-bold">Women:</span> <span class="text-white font-semibold">${rn(active('w').names, SCHED.w[r].rest)}</span></span>
+        <span><span class="text-sky-400 font-bold">Men:</span> <span class="text-white font-semibold">${rn('m', SCHED.m[r].rest)}</span></span>
+        <span><span class="text-pink-400 font-bold">Women:</span> <span class="text-white font-semibold">${rn('w', SCHED.w[r].rest)}</span></span>
       </div>`;
-      [['m', active('m').names, active('m').skills, 'Court 1 (Men)'], ['w', active('w').names, active('w').skills, 'Court 2 (Women)']].forEach(([g, names, skills, court]) => {
+      [['m', 'Court 1 (Men)'], ['w', 'Court 2 (Women)']].forEach(([g, court]) => {
+        const A = active(g);
         SCHED[g][r].m.forEach((m, idx) => {
           const key = `${g}_r${r}_m${idx}`;
           const sc = matchScores[key] || {s1: '', s2: ''};
-          const team = t => t.map(i => `${esc(names[i])}${skillTag(skills[i])}`).join(' &amp; ');
-          const str = t => t.reduce((a, i) => a + skills[i], 0);
-          html += createMatchCard(currentMode === 'scorekeeper' ? `${court} · ⚖️ ${str(m.t1)} vs ${str(m.t2)}` : court, team(m.t1), team(m.t2), key, sc.s1, sc.s2);
+          const team = t => t.map(i => `${nameBtn(g, i)}${skillTag(A.skills[i])}`).join(' &amp; ');
+          const str = t => t.reduce((a, i) => a + A.skills[i], 0);
+          const mine = !!(me && me.g === g && (m.t1.includes(me.i) || m.t2.includes(me.i)));
+          html += createMatchCard(currentMode === 'scorekeeper' ? `${court} · ⚖️ ${str(m.t1)} vs ${str(m.t2)}` : court, team(m.t1), team(m.t2), key, sc.s1, sc.s2, mine);
         });
       });
       document.getElementById('matches-container').innerHTML = html;
     }
 
-    function createMatchCard(court, t1, t2, key, s1, s2) {
+    function createMatchCard(court, t1, t2, key, s1, s2, mine) {
       const ro = currentMode === 'spectator';
       const inp = (id, v) => `<input type="number" inputmode="numeric" id="${id}" min="0" max="15" value="${v ?? ''}" ${ro ? 'disabled' : ''} oninput="queueSave('${id.replace(/_s[12]$/, '')}', false)" class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">`;
       return `
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 space-y-3 shadow-md">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${court}</div>
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 space-y-3 shadow-md ${mine ? 'ring-2 ring-emerald-400/70' : ''}">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${court}${mine ? ' · <span class="text-emerald-300">your game</span>' : ''}</div>
           <div class="flex items-center justify-between gap-2">
             <div class="flex-1 text-xs sm:text-sm font-bold text-white">${t1}</div>
             ${inp(key + '_s1', s1)}
@@ -903,7 +1481,7 @@
         const v1 = document.getElementById(key + '_s1').value;
         const v2 = document.getElementById(key + '_s2').value;
         const ok = await writeScore(key, v1, v2);
-        renderStandings();
+        buildRoundButtons(); renderStandings(); renderLiveStrip();
         if (!isPlayoff) renderPlayoffs(); // seeds may change; playoff inputs aren't focused here
         else updateMedalTeams();
         showToast(ok ? '✓ Saved' : 'Save failed — check connection', !ok);
@@ -964,20 +1542,122 @@
       ui('bronze-teams', t.bronzeA, t.bronzeB, 'playoff_bronze', ['bronze_a', 'bronze_b']);
     }
 
+    // ---------- backup / export ----------
+    function downloadFile(filename, text, mime) {
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+    const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
+    const unesc = h => String(h).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+    function buildBackup() {
+      const grp = g => { const L = live(g); return L.ids.map((id, i) => ({ id, name: L.names[i], skill: L.skills[i] })); };
+      return {
+        app: 'pickleball-tourna', version: 4, exportedAt: new Date().toISOString(),
+        names: { men: grp('m'), women: grp('w') },
+        schedule: SNAP ? { m: SCHED.m, w: SCHED.w, snap: SNAP } : null,
+        scores: matchScores,
+        live: liveRound === null ? null : { round: liveRound, ts: Date.now() }
+      };
+    }
+    function downloadBackup(quiet) {
+      downloadFile(`pickleball-backup-${stamp()}.json`, JSON.stringify(buildBackup(), null, 2), 'application/json');
+      if (!quiet) showToast('✓ Backup downloaded');
+    }
+
+    function downloadResultsCsv() {
+      const q = v => `"${String(v).replace(/"/g, '""')}"`;
+      const rows = [['Round', 'Group', 'Team 1', 'Team 2', 'Score 1', 'Score 2', 'Winner']];
+      const winner = (a, b, t1, t2) => (a === '' || b === '' || a == null || b == null) ? '' : (+a > +b ? t1 : +b > +a ? t2 : 'Tie');
+      ['m', 'w'].forEach(g => {
+        const A = active(g), t = x => x.map(i => A.names[i]).join(' & ');
+        SCHED[g].forEach((rd, r) => rd.m.forEach((m, mi) => {
+          const sc = matchScores[`${g}_r${r}_m${mi}`] || {};
+          rows.push([r + 1, g === 'm' ? 'Men' : 'Women', t(m.t1), t(m.t2), sc.s1 ?? '', sc.s2 ?? '', winner(sc.s1, sc.s2, t(m.t1), t(m.t2))]);
+        }));
+      });
+      const pt = playoffTeams();
+      [['Semi 1', 'playoff_semi1', pt.s1a, pt.s1b], ['Semi 2', 'playoff_semi2', pt.s2a, pt.s2b], ['Gold', 'playoff_gold', pt.goldA, pt.goldB], ['Bronze', 'playoff_bronze', pt.bronzeA, pt.bronzeB]].forEach(([label, key, a, b]) => {
+        const sc = matchScores[key] || {};
+        rows.push(['Playoffs', label, unesc(a), unesc(b), sc.s1 ?? '', sc.s2 ?? '', winner(sc.s1, sc.s2, unesc(a), unesc(b))]);
+      });
+      downloadFile(`pickleball-results-${stamp()}.csv`, '\uFEFF' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+      showToast('✓ Results downloaded');
+    }
+
+    async function handleRestoreFile(file) {
+      if (!file || currentMode !== 'scorekeeper') return;
+      let d;
+      try { d = JSON.parse(await file.text()); } catch (e) { showToast('That file is not a valid backup', true); return; }
+      const okGroup = x => Array.isArray(x) && x.length >= MIN_PLAYERS && x.length <= MAX_PLAYERS && x.every(p => p && typeof p === 'object');
+      if (!d || d.app !== 'pickleball-tourna' || !d.names || !okGroup(d.names.men) || !okGroup(d.names.women) || typeof d.scores !== 'object' || d.scores === null) { showToast('That is not a Pickleball backup file', true); return; }
+      const when = d.exportedAt ? new Date(d.exportedAt).toLocaleString() : 'unknown time';
+      if (!confirm(`Restore the backup from ${when}?\n\nThis REPLACES all current players, the schedule and all scores.`)) return;
+      generating = true;
+      try {
+        const clean = {};
+        Object.keys(d.scores).forEach(k => { const v = d.scores[k]; if (/^([mw]_r\d+_m\d+|playoff_(semi1|semi2|gold|bronze))$/.test(k) && v && typeof v === 'object') clean[k] = { s1: String(v.s1 ?? ''), s2: String(v.s2 ?? '') }; });
+        applyNames(d.names);
+        applySchedule(d.schedule || null);
+        matchScores = clean;
+        applyLive(d.live || null);
+        undoStack = []; Object.keys(unsynced).forEach(k => delete unsynced[k]);
+        let ok = true, err = '';
+        if (!CLOUD) {
+          localStorage.setItem('pb_scores_v2', JSON.stringify(clean));
+          localStorage.setItem('pb_schedule', JSON.stringify(d.schedule || null));
+          localStorage.setItem('pb_live', JSON.stringify(liveRound === null ? null : { round: liveRound }));
+          await writeNames();
+        } else {
+          try {
+            const put = async (p, v) => { const r = await fb(p, 'PUT', JSON.stringify(v)); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); };
+            if (!(await writeNames())) throw new Error('players not saved');
+            await put('schedule', d.schedule || null);
+            await put('scores_v2', Object.keys(clean).length ? clean : null);
+            await put('live', liveRound === null ? null : { round: liveRound, ts: Date.now() });
+          } catch (e) { ok = false; err = e.message; setSync(false, err); }
+        }
+        currentRoundIndex = liveRound !== null ? liveRound : 0;
+        buildRoundButtons(); updateUndoUI(); updateUnsyncedUI(); renderLiveStrip();
+        renderStandings(); renderMatches(); renderPlayoffs(); renderNamesEditor();
+        showToast(ok ? '✓ Backup restored' : `Restore failed (${err})`, !ok);
+      } finally { generating = false; }
+    }
+
     // ---------- QR ----------
-    function openQRModal() {
+    let qrMode = 'spectator';
+    const qrUrl = mode => baseUrl() + (mode === 'checkin' ? '?checkin=1' : '');
+    function openQRModal(mode) {
+      showQR(mode === 'checkin' && currentMode === 'scorekeeper' ? 'checkin' : 'spectator');
+      document.getElementById('qr-modal').classList.remove('hidden');
+    }
+    function showQR(mode) {
+      qrMode = mode;
       const c = document.getElementById('qrcode-container');
       c.innerHTML = '';
-      new QRCode(c, { text: window.location.origin + window.location.pathname, width: 160, height: 160, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-      document.getElementById('qr-modal').classList.remove('hidden');
+      new QRCode(c, { text: qrUrl(mode), width: 160, height: 160, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+      document.getElementById('qr-title').innerText = mode === 'checkin' ? 'Scan to Check In' : 'Scan for Live Standings';
+      document.getElementById('qr-desc').innerText = mode === 'checkin'
+        ? 'Players scan this, enter their name and level, and are taken to the live scoreboard.'
+        : 'Scan this code with any phone camera to view the live scoreboard in Spectator Mode.';
+      document.getElementById('qr-url').innerText = qrUrl(mode);
+      // only the scorekeeper can switch to the check-in code
+      const tabs = document.getElementById('qr-tabs');
+      tabs.classList.toggle('hidden', currentMode !== 'scorekeeper');
+      const style = (id, on) => { document.getElementById(id).className = 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (on ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-300'); };
+      style('qr-tab-spectator', mode === 'spectator'); style('qr-tab-checkin', mode === 'checkin');
     }
     function closeQRModal() { document.getElementById('qr-modal').classList.add('hidden'); }
     function copyShareLink() {
-      navigator.clipboard.writeText(window.location.origin + window.location.pathname);
-      showToast('Live link copied!');
+      navigator.clipboard.writeText(qrUrl(qrMode));
+      showToast('Link copied!');
     }
 
-    window.onload = initApp;
+    window.onload = IS_CHECKIN ? initCheckin : initApp;
   </script>
 </body>
 </html>
