@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pickleball Mini-Tournament Manager v4.0</title>
+  <title>Pickleball Mini-Tournament Manager v5.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -51,49 +51,33 @@
 
   <main class="flex-grow max-w-6xl w-full mx-auto p-4 space-y-6">
     <div class="hidden md:flex border-b border-slate-800 space-x-6 text-sm font-semibold">
-      <button onclick="switchTab('standings')" id="tab-btn-standings" class="tab-link pb-3 border-b-2 border-emerald-400 text-emerald-400">🏆 Leaderboards</button>
+      <button onclick="switchTab('standings')" id="tab-btn-standings" class="tab-link pb-3 border-b-2 border-emerald-400 text-emerald-400">🏆 Standings</button>
       <button onclick="switchTab('matches')" id="tab-btn-matches" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🎾 Court Queue</button>
-      <button onclick="switchTab('playoffs')" id="tab-btn-playoffs" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🥇 Mixed Playoffs</button>
+      <button onclick="switchTab('playoffs')" id="tab-btn-playoffs" class="tab-link pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">🥇 Playoffs</button>
       <button onclick="switchTab('names')" id="tab-btn-names" class="tab-link hidden pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">✏️ Players &amp; Skills</button>
     </div>
 
     <section id="tab-standings" class="tab-content space-y-6">
       <p class="text-[13px] sm:text-sm leading-relaxed text-slate-300 bg-slate-800/60 border border-slate-700/60 rounded-xl px-3.5 py-2.5">👆 <b class="text-white">Tap a player's name</b> to see their matches (yours or anyone else's)<br>👆 <b class="text-white">Tap W-L, DIFF or PTS</b> to see how they're worked out<br>👆 <b class="text-white">Tap a tag</b> like <span class="px-1.5 py-0.5 rounded bg-violet-500/25 text-violet-300 text-[10px] font-bold align-middle">H2H</span> <span class="px-1.5 py-0.5 rounded bg-sky-500/25 text-sky-300 text-[10px] font-bold align-middle">OPP W</span> <span class="px-1.5 py-0.5 rounded bg-rose-500/25 text-rose-300 text-[10px] font-bold align-middle">DRAW</span>, when one appears, to see why.</p>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
-            <h2 class="text-lg font-bold text-sky-400 flex items-center gap-2"><span>👨</span> Men's Group Standings</h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead><tr class="text-slate-400 text-xs border-b border-slate-700/40 uppercase tracking-wider">
-                <th class="py-2 px-1">#</th><th class="py-2 px-2">Player</th><th class="py-2 px-2 text-center">W-L</th><th class="py-2 px-2 text-center">Diff</th><th class="py-2 px-2 text-center">Pts</th>
-              </tr></thead>
-              <tbody id="mens-standings-body" class="divide-y divide-slate-700/30"></tbody>
-            </table>
-          </div>
-          <p id="mens-tb-note" class="hidden text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2"></p>
-          <div id="mens-tb-tools" class="hidden space-y-2"></div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+          <h2 class="text-lg font-bold text-emerald-400 flex items-center gap-2"><span>🏅</span> Group Standings</h2>
+          <span class="text-xs text-slate-400">Top 8 make the playoffs</span>
         </div>
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
-            <h2 class="text-lg font-bold text-pink-400 flex items-center gap-2"><span>👩</span> Women's Group Standings</h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead><tr class="text-slate-400 text-xs border-b border-slate-700/40 uppercase tracking-wider">
-                <th class="py-2 px-1">#</th><th class="py-2 px-2">Player</th><th class="py-2 px-2 text-center">W-L</th><th class="py-2 px-2 text-center">Diff</th><th class="py-2 px-2 text-center">Pts</th>
-              </tr></thead>
-              <tbody id="womens-standings-body" class="divide-y divide-slate-700/30"></tbody>
-            </table>
-          </div>
-          <p id="womens-tb-note" class="hidden text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2"></p>
-          <div id="womens-tb-tools" class="hidden space-y-2"></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead><tr class="text-slate-400 text-xs border-b border-slate-700/40 uppercase tracking-wider">
+              <th class="py-2 px-1">#</th><th class="py-2 px-2">Player</th><th class="py-2 px-2 text-center">W-L</th><th class="py-2 px-2 text-center">Diff</th><th class="py-2 px-2 text-center">Pts</th>
+            </tr></thead>
+            <tbody id="standings-body" class="divide-y divide-slate-700/30"></tbody>
+          </table>
         </div>
+        <p id="tb-note" class="hidden text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2"></p>
+        <div id="tb-tools" class="hidden space-y-2"></div>
       </div>
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 sm:p-5 space-y-2">
         <h3 class="text-sm font-bold text-amber-400">⚖️ What if players have the same record?</h3>
-        <p class="text-xs text-slate-400">We check these in order and stop as soon as one player is ahead. The top 4 in each group go to the playoffs.</p>
+        <p class="text-xs text-slate-400">We check these in order and stop as soon as one player is ahead. The top 8 go to the playoffs.</p>
         <ol class="list-decimal list-inside text-xs text-slate-300 space-y-1.5">
           <li><b>Most wins</b> ranks higher.</li>
           <li><b>Best point difference.</b> Points you scored minus points scored against you.</li>
@@ -110,36 +94,32 @@
     <section id="tab-matches" class="tab-content hidden space-y-6">
       <p class="text-[13px] sm:text-sm leading-relaxed text-slate-300 bg-slate-800/60 border border-slate-700/60 rounded-xl px-3.5 py-2.5">👆 <b class="text-white">Tap a player's name</b> to see their matches (yours or anyone else's)<br>👆 <b class="text-white">Tap a <span class="px-1.5 py-0.5 rounded bg-violet-500/25 text-violet-300 text-[10px] font-bold align-middle">FILL-IN</span> tag</b> to see what it means.</p>
       <div id="courts-board" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      <div id="matches-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+      <div id="matches-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
     </section>
 
     <section id="tab-playoffs" class="tab-content hidden space-y-6">
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-6">
         <div class="border-b border-slate-700/60 pb-3">
-          <h2 class="text-xl font-extrabold text-amber-400 flex items-center gap-2">🏆 Mixed Doubles Championship Bracket</h2>
-          <p class="text-xs text-slate-400 mt-1">First to 11 Points • Standard Deuce (Win by 2)</p>
+          <h2 class="text-xl font-extrabold text-amber-400 flex items-center gap-2">🏆 Playoff Bracket</h2>
+          <p class="text-xs text-slate-400 mt-1">Top 8 pair up: #1 + #8, #2 + #7, #3 + #6, #4 + #5 • First to 11 points • Win by 2</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Semifinals (Round of 4)</h3>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Semifinals</h3>
             <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
-              <div class="text-[10px] font-bold text-slate-500 uppercase">Semi 1 • Seed #1 vs Seed #4</div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase">Semi 1 • Team 1 vs Team 4</div>
               <div id="semi1-teams" class="space-y-2"></div>
             </div>
             <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
-              <div class="text-[10px] font-bold text-slate-500 uppercase">Semi 2 • Seed #2 vs Seed #3</div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase">Semi 2 • Team 2 vs Team 3</div>
               <div id="semi2-teams" class="space-y-2"></div>
             </div>
           </div>
           <div class="space-y-4">
-            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Medal Matches</h3>
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Final</h3>
             <div class="bg-gradient-to-br from-amber-500/10 to-slate-900 border border-amber-500/30 rounded-xl p-4 space-y-3">
-              <div class="text-[10px] font-bold text-amber-400 uppercase">🥇 Gold Medal Match</div>
-              <div id="gold-teams" class="space-y-2"></div>
-            </div>
-            <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-4 space-y-3">
-              <div class="text-[10px] font-bold text-amber-600 uppercase">🥉 Bronze Medal Match</div>
-              <div id="bronze-teams" class="space-y-2"></div>
+              <div class="text-[10px] font-bold text-amber-400 uppercase">🥇 Championship Final</div>
+              <div id="final-teams" class="space-y-2"></div>
             </div>
           </div>
         </div>
@@ -150,7 +130,7 @@
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
         <div class="border-b border-slate-700/60 pb-3">
           <h2 class="text-lg font-bold text-white">✏️ Players &amp; Skill Levels</h2>
-          <p class="text-xs text-slate-400 mt-1">Names and skill levels save automatically. You can add or remove players (4–12 per group). After adding/removing players or changing skills, tap “Generate schedule” so the matches are rebuilt.</p>
+          <p class="text-xs text-slate-400 mt-1">Names and skill levels save automatically. You can add or remove players (8–20). After adding/removing players or changing skills, tap “Generate schedule” so the matches are rebuilt.</p>
         </div>
         <div class="bg-slate-900/60 border border-emerald-500/30 rounded-xl p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -163,25 +143,18 @@
           <p class="text-xs text-slate-400">Players scan the QR, enter their name and level, then land on the live scoreboard. They show up here for you to add to the roster.</p>
           <div id="checkin-list" class="space-y-2"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <h3 class="text-sm font-bold text-sky-400">👨 Men</h3>
-            <div id="names-men" class="space-y-2"></div>
-          </div>
-          <div class="space-y-2">
-            <h3 class="text-sm font-bold text-pink-400">👩 Women</h3>
-            <div id="names-women" class="space-y-2"></div>
-          </div>
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-emerald-400">🎾 Players</h3>
+          <div id="names-list" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+          <div id="names-add"></div>
         </div>
         <div class="border-t border-slate-700/60 pt-4 space-y-3">
           <h3 class="text-sm font-bold text-amber-400">⚖️ Court Queue Schedule</h3>
           <p id="roster-note" class="hidden text-xs font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2"></p>
-          <p class="text-xs text-slate-400">Each group gets an ordered list of matches. Every player plays exactly the same number of games, partners never repeat, and teams are balanced by skill. Men start on Court 1, women on Court 2. When one group finishes, both courts switch to the other group.</p>
+          <p class="text-xs text-slate-400">One ordered list of doubles matches for everyone, shared across Court 1 and Court 2. Every player plays exactly the same number of games, partners never repeat, and teams are balanced by skill.</p>
           <div class="flex flex-wrap items-center gap-2">
-            <label class="text-xs text-sky-400 font-bold">👨 Men
-              <select id="games-select-m" onchange="updatePlanHint()" class="ml-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></select></label>
-            <label class="text-xs text-pink-400 font-bold">👩 Women
-              <select id="games-select-w" onchange="updatePlanHint()" class="ml-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></select></label>
+            <label class="text-xs text-emerald-400 font-bold">Games per player
+              <select id="games-select" onchange="updatePlanHint()" class="ml-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"></select></label>
             <button onclick="generateSchedules()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">⚖️ Generate schedule</button>
           </div>
           <label class="flex items-center gap-2 text-xs text-slate-300"><input type="checkbox" id="allow-fill" onchange="allowFill = this.checked; updatePlanHint()" class="accent-amber-500"> Allow fill-ins (lets any number of games work; a fill-in's extra game doesn't count for them)</label>
@@ -303,22 +276,19 @@
     const POLL_MS = 5000;
     const DEFAULT_PIN = "12345678";
 
-    const DEFAULT_MEN = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Troy", "Allan", "Eurs", "Ivan", "Franz"];
-    const DEFAULT_WOMEN = ["Ju", "Sars", "Kams", "Shane", "Aeio", "Pam", "Fiona", "Jam", "Nina", "Camille"];
-    const MIN_PLAYERS = 4, MAX_PLAYERS = 12;
-    let mensPlayers = DEFAULT_MEN.slice();
-    let womensPlayers = DEFAULT_WOMEN.slice();
-    let mensIds = DEFAULT_MEN.map((_, i) => 'm' + i);
-    let womensIds = DEFAULT_WOMEN.map((_, i) => 'w' + i);
+    // One group for everyone. Internally the group key is 'm', so score keys stay m_q0, m_q1, ...
+    const DEFAULT_PLAYERS = ["Ian", "Pat", "Jonas", "Dabu", "Anton", "Ju", "Sars", "Kams", "Shane", "Aeio"];
+    const MIN_PLAYERS = 8, MAX_PLAYERS = 20, PLAYOFF_SPOTS = 8;
+    let players = DEFAULT_PLAYERS.slice();
+    let playerIds = DEFAULT_PLAYERS.map((_, i) => 'm' + i);
+    let playerSkill = DEFAULT_PLAYERS.map(() => 3);
     const newId = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
-    // Court queue: each group has an ordered list of matches [{t1:[a,b], t2:[c,d]}, ...]
+    // Court queue: one ordered list of matches [{t1:[a,b], t2:[c,d]}, ...]
     // (numbers are player positions in the roster the schedule was built for)
-    let SCHED = { m: [], w: [] };
+    let SCHED = { m: [] };
     let SNAP = null; // roster (ids, names, skills) the current schedule was built for
     let generating = false;
-    let mensSkill = Array(10).fill(3);
-    let womensSkill = Array(10).fill(3);
     const SKILLS = {
       1: { label: 'Beginner',   tag: 'BEG',  cls: 'bg-slate-500/30 text-slate-300' },
       2: { label: 'Low-Inter',  tag: 'LOW',  cls: 'bg-sky-500/25 text-sky-300' },
@@ -330,7 +300,7 @@
 
     const CLOUD = !!FIREBASE_URL;
     const SECURE = CLOUD && !!FIREBASE_API_KEY;
-    let ME = null;                // {g, id} = "this is me" on this phone
+    let ME = null;                // {id} = "this is me" on this phone
     let undoStack = [];
     const unsynced = {};          // score edits that haven't reached the cloud yet
     const IS_CHECKIN = new URLSearchParams(window.location.search).has('checkin');
@@ -340,9 +310,9 @@
     let currentMode = 'spectator';
     let pinModalMode = 'login';
     let matchScores = {};
-    let ORDER = { m: [], w: [] };  // play order after skips (lists of match numbers); empty = normal order
+    let ORDER = { m: [] };  // play order after skips (list of match numbers); empty = normal order
     const orderOf = g => { const n = SCHED[g].length, o = ORDER[g]; return (Array.isArray(o) && o.length === n && new Set(o).size === n && o.every(i => Number.isInteger(i) && i >= 0 && i < n)) ? o : SCHED[g].map((_, i) => i); };
-    let TIEBREAKS = {};   // 1-on-1 tiebreaker matches {id: {g, a, b, s1, s2}} (a, b = player ids)
+    let TIEBREAKS = {};   // tiebreaker games {key: {g, ids, matches}}
     let DRAWS = {};       // draws run by the scorekeeper {key: {order: [ids], ts}}
     let pinHash = null;
 
@@ -415,7 +385,7 @@
         applySchedule(JSON.parse(localStorage.getItem('pb_schedule') || 'null'));
         TIEBREAKS = JSON.parse(localStorage.getItem('pb_tiebreaks') || '{}');
         DRAWS = JSON.parse(localStorage.getItem('pb_draws') || '{}');
-        { const o = JSON.parse(localStorage.getItem('pb_order') || 'null'); ORDER = { m: (o && o.m) || [], w: (o && o.w) || [] }; }
+        { const o = JSON.parse(localStorage.getItem('pb_order') || 'null'); ORDER = { m: (o && o.m) || [] }; }
         setSync(null);
         return;
       }
@@ -429,7 +399,7 @@
         if (pRes) pinHash = (await pRes.json()) || null;
         applyNames(await nRes.json());
         applySchedule(await schRes.json());
-        try { const [tR, dR, oR] = await Promise.all([fb('tiebreaks'), fb('draws'), fb('order')]); if (oR.ok) { const o = await oR.json(); ORDER = { m: (o && o.m) || [], w: (o && o.w) || [] }; } if (tR.ok) { const raw = (await tR.json()) || {}; TIEBREAKS = Object.fromEntries(Object.entries(raw).filter(([, v]) => v && Array.isArray(v.matches))); } if (dR.ok) DRAWS = (await dR.json()) || {}; } catch (e) { /* tie tools are optional */ }
+        try { const [tR, dR, oR] = await Promise.all([fb('tiebreaks'), fb('draws'), fb('order')]); if (oR.ok) { const o = await oR.json(); ORDER = { m: (o && o.m) || [] }; } if (tR.ok) { const raw = (await tR.json()) || {}; TIEBREAKS = Object.fromEntries(Object.entries(raw).filter(([, v]) => v && Array.isArray(v.matches))); } if (dR.ok) DRAWS = (await dR.json()) || {}; } catch (e) { /* tie tools are optional */ }
         setSync(true);
       } catch (e) {
         setSync(false, e.message);
@@ -437,9 +407,9 @@
     }
 
     function labelFor(key) {
-      const m = key.match(/^([mw])_q(\d+)$/);
-      if (m) return `${m[1] === 'm' ? 'Men' : 'Women'} match #${+m[2] + 1}`;
-      return ({ playoff_semi1: 'Semi 1', playoff_semi2: 'Semi 2', playoff_gold: 'Gold match', playoff_bronze: 'Bronze match' })[key] || key;
+      const m = key.match(/^m_q(\d+)$/);
+      if (m) return `Match #${+m[1] + 1}`;
+      return ({ playoff_semi1: 'Semi 1', playoff_semi2: 'Semi 2', playoff_final: 'Final' })[key] || key;
     }
 
     function pushUndo(label, items, noCoalesce) {
@@ -522,7 +492,7 @@
       if (currentMode !== 'scorekeeper') return;
       const keys = Object.keys(matchScores);
       if (!keys.length) { showToast('Nothing to reset'); return; }
-      const t = prompt(`This clears ALL ${keys.length} scores (groups and playoffs).\nA backup file downloads first, and you can undo.\n\nType RESET to confirm:`);
+      const t = prompt(`This clears ALL ${keys.length} scores (group and playoffs).\nA backup file downloads first, and you can undo.\n\nType RESET to confirm:`);
       if (t === null || t.trim().toUpperCase() !== 'RESET') { showToast('Reset cancelled'); return; }
       const items = keys.filter(k => matchScores[k]).map(k => ({ key: k, prev: { s1: matchScores[k].s1, s2: matchScores[k].s2 } }));
       downloadBackup(true);
@@ -530,71 +500,71 @@
       matchScores = {};
       Object.keys(unsynced).forEach(k => delete unsynced[k]);
       let ok = true;
-      TIEBREAKS = {}; DRAWS = {}; ORDER = { m: [], w: [] };
+      TIEBREAKS = {}; DRAWS = {}; ORDER = { m: [] };
       if (!CLOUD) { localStorage.setItem('pb_scores_v2', '{}'); localStorage.removeItem('pb_tiebreaks'); localStorage.removeItem('pb_draws'); localStorage.removeItem('pb_order'); }
       else { try { const r1 = await fb('scores_v2', 'PUT', 'null'); const r2 = await fb('tiebreaks', 'PUT', 'null'); const r3 = await fb('draws', 'PUT', 'null'); const r4 = await fb('order', 'PUT', 'null'); ok = r1.ok && r2.ok && r3.ok && r4.ok; } catch (e) { ok = false; } }
       refreshAll(); updateUnsyncedUI();
       showToast(ok ? '✓ All scores reset (backup downloaded)' : 'Reset failed — check connection', !ok);
     }
 
-    function parseGroup(list, legacySkills, defNames, prefix) {
-      if (Array.isArray(list) && list.length && list.every(x => x && typeof x === 'object')) {
-        const ids = [], names = [], skills = [];
-        list.forEach((x, i) => {
-          ids.push(String(x.id || prefix + i));
+    // Reads the roster. Older saves with separate men/women lists are merged into one list.
+    function parseRoster(data) {
+      let list = null;
+      if (data && Array.isArray(data.players)) list = data.players;
+      else if (data && (Array.isArray(data.men) || Array.isArray(data.women))) list = [...(Array.isArray(data.men) ? data.men : []), ...(Array.isArray(data.women) ? data.women : [])];
+      const objs = Array.isArray(list) ? list.filter(x => x && typeof x === 'object') : [];
+      if (objs.length) {
+        const seen = new Set(), ids = [], names = [], skills = [];
+        objs.slice(0, MAX_PLAYERS).forEach((x, i) => {
+          let id = String(x.id || 'p' + i);
+          if (seen.has(id)) id = id + '_' + i;
+          seen.add(id);
+          ids.push(id);
           names.push(String(x.name || '').trim() || 'Player ' + (i + 1));
           skills.push([1, 2, 3, 4].includes(Number(x.skill)) ? Number(x.skill) : 3);
         });
         return { ids, names, skills };
       }
-      return {
-        ids: defNames.map((_, i) => prefix + i),
-        names: defNames.map((d, i) => (list && typeof list[i] === 'string' && list[i].trim()) ? list[i].trim() : d),
-        skills: defNames.map((_, i) => (legacySkills && [1, 2, 3, 4].includes(Number(legacySkills[i]))) ? Number(legacySkills[i]) : 3)
-      };
+      return { ids: DEFAULT_PLAYERS.map((_, i) => 'm' + i), names: DEFAULT_PLAYERS.slice(), skills: DEFAULT_PLAYERS.map(() => 3) };
     }
 
     function applyNames(data) {
-      const m = parseGroup(data && data.men, data && data.menSkill, DEFAULT_MEN, 'm');
-      const w = parseGroup(data && data.women, data && data.womenSkill, DEFAULT_WOMEN, 'w');
-      mensIds = m.ids; mensPlayers = m.names; mensSkill = m.skills;
-      womensIds = w.ids; womensPlayers = w.names; womensSkill = w.skills;
+      const r = parseRoster(data);
+      playerIds = r.ids; players = r.names; playerSkill = r.skills;
     }
 
-    const live = g => g === 'm' ? { ids: mensIds, names: mensPlayers, skills: mensSkill } : { ids: womensIds, names: womensPlayers, skills: womensSkill };
-    const snapOf = g => (SNAP ? SNAP[g] : live(g));
+    const live = () => ({ ids: playerIds, names: players, skills: playerSkill });
+    const snapOf = () => (SNAP ? SNAP.m : live());
     // The roster that matches the current schedule.
-    function active(g) {
-      const cur = live(g), sn = snapOf(g);
+    function active() {
+      const cur = live(), sn = snapOf();
       return cur.ids.join('|') === sn.ids.join('|') ? cur : sn;
     }
 
     function applySchedule(data) {
       const norm = d => (Array.isArray(d) && d.every(x => x && Array.isArray(x.t1) && Array.isArray(x.t2)))
         ? d.map(x => { const o = { t1: x.t1.map(Number), t2: x.t2.map(Number) }; if (Array.isArray(x.f) && x.f.length) o.f = x.f.map(Number); return o; }) : null;
-      // old round-based schedules have a different shape and are ignored (generate a new one)
-      const m = data ? norm(data.m || []) : null, w = data ? norm(data.w || []) : null;
-      if (m && w && (m.length || w.length)) {
-        SCHED = { m, w };
+      // schedules from the old men/women version are ignored (generate a new one)
+      const m = (data && data.single) ? norm(data.m || []) : null;
+      if (m && m.length) {
+        SCHED = { m };
         const clean = x => (x && Array.isArray(x.ids) && Array.isArray(x.names) && Array.isArray(x.skills)) ? { ids: x.ids.map(String), names: x.names.map(String), skills: x.skills.map(Number) } : null;
-        const sm = data.snap && clean(data.snap.m), sw = data.snap && clean(data.snap.w);
-        SNAP = (sm && sw) ? { m: sm, w: sw } : null;
-      } else { SCHED = { m: [], w: [] }; SNAP = null; }
+        const sm = data.snap && clean(data.snap.m);
+        SNAP = sm ? { m: sm } : null;
+      } else { SCHED = { m: [] }; SNAP = null; }
     }
 
-    const hasSchedule = () => SCHED.m.length + SCHED.w.length > 0;
-    function rosterChanged() {
-      return hasSchedule() && ['m', 'w'].some(g => live(g).ids.join('|') !== snapOf(g).ids.join('|'));
-    }
+    const hasSchedule = () => SCHED.m.length > 0;
+    const rosterChanged = () => hasSchedule() && live().ids.join('|') !== snapOf().ids.join('|');
     function scheduleStale() {
       if (!hasSchedule()) return false;
       if (rosterChanged()) return true;
-      return ['m', 'w'].some(g => live(g).skills.some((v, i) => v !== snapOf(g).skills[i]));
+      return live().skills.some((v, i) => v !== snapOf().skills[i]);
     }
 
     async function writeNames() {
-      const grp = g => { const L = live(g); return L.ids.map((id, i) => ({ id, name: L.names[i], skill: L.skills[i] })); };
-      const data = { men: grp('m'), women: grp('w') };
+      const L = live();
+      const data = { players: L.ids.map((id, i) => ({ id, name: L.names[i], skill: L.skills[i] })) };
       if (!CLOUD) { localStorage.setItem('pb_names', JSON.stringify(data)); return true; }
       try {
         const r = await fb('names', 'PUT', JSON.stringify(data));
@@ -632,7 +602,7 @@
       renderStandings();
       renderLiveStrip();
       if (currentMode === 'spectator') { renderMatches(); renderPlayoffs(); }
-      else { renderBoard(); updateMedalTeams(); await loadCheckins(); renderCheckins(); }
+      else { renderBoard(); updateFinalTeams(); await loadCheckins(); renderCheckins(); }
     }
 
     function applyModeUI() {
@@ -746,39 +716,30 @@
 
     // ---------- names editor ----------
     function renderNamesEditor() {
-      const build = (id, g) => {
-        const L = live(g);
-        const canRemove = L.names.length > MIN_PLAYERS, canAdd = L.names.length < MAX_PLAYERS;
-        const rows = L.names.map((n, i) =>
-          `<div class="flex items-center gap-2"><span class="w-5 text-xs font-mono text-slate-500">${i + 1}</span>
-           <input type="text" id="name_${g}_${i}" value="${esc(n)}" maxlength="20" oninput="onNameInput()"
-             class="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-           <select id="skill_${g}_${i}" onchange="onNameInput()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-             ${[1,2,3,4].map(l => `<option value="${l}" ${L.skills[i] === l ? 'selected' : ''}>${SKILLS[l].label}</option>`).join('')}
-           </select>
-           <button onclick="removePlayer('${g}', ${i})" ${canRemove ? '' : 'disabled'} title="Remove player" class="w-8 h-8 flex-shrink-0 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold ${canRemove ? '' : 'opacity-30'}">✕</button></div>`).join('');
-        document.getElementById(id).innerHTML = rows +
-          `<button onclick="addPlayer('${g}')" ${canAdd ? '' : 'disabled'} class="w-full mt-1 py-2 text-xs font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 ${canAdd ? '' : 'opacity-40'}">＋ Add ${g === 'm' ? 'man' : 'woman'} (${L.names.length}/${MAX_PLAYERS})</button>`;
-      };
-      build('names-men', 'm');
-      build('names-women', 'w');
+      const L = live();
+      const canRemove = L.names.length > MIN_PLAYERS, canAdd = L.names.length < MAX_PLAYERS;
+      document.getElementById('names-list').innerHTML = L.names.map((n, i) =>
+        `<div class="flex items-center gap-2"><span class="w-5 text-xs font-mono text-slate-500">${i + 1}</span>
+         <input type="text" id="name_${i}" value="${esc(n)}" maxlength="20" oninput="onNameInput()"
+           class="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+         <select id="skill_${i}" onchange="onNameInput()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+           ${[1,2,3,4].map(l => `<option value="${l}" ${L.skills[i] === l ? 'selected' : ''}>${SKILLS[l].label}</option>`).join('')}
+         </select>
+         <button onclick="removePlayer(${i})" ${canRemove ? '' : 'disabled'} title="Remove player" class="w-8 h-8 flex-shrink-0 rounded-lg border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold ${canRemove ? '' : 'opacity-30'}">✕</button></div>`).join('');
+      document.getElementById('names-add').innerHTML =
+        `<button onclick="addPlayer()" ${canAdd ? '' : 'disabled'} class="w-full mt-1 py-2 text-xs font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 ${canAdd ? '' : 'opacity-40'}">＋ Add player (${L.names.length}/${MAX_PLAYERS})</button>`;
       updatePlanHint();
       renderCheckins();
       const sn = document.getElementById('security-note');
       if (sn) {
-        sn.classList.toggle('hidden', !CLOUD);
         sn.className = 'text-[11px] font-semibold rounded-lg p-2 ' + (SECURE ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300' : 'bg-amber-500/10 border border-amber-500/30 text-amber-300') + (CLOUD ? '' : ' hidden');
         sn.innerText = SECURE ? '🔒 Secure mode is on: only a scorekeeper who entered the PIN can change data.' : '🔓 Open mode: anyone with the database link could change scores. Turn on secure mode (add your Firebase Web API Key and publish the rules).';
       }
     }
 
     function readEditor() {
-      ['m', 'w'].forEach(g => {
-        const L = live(g);
-        const names = L.names.map((d, i) => { const el = document.getElementById(`name_${g}_${i}`); return el ? (el.value.trim() || d) : d; });
-        const skills = L.skills.map((d, i) => { const el = document.getElementById(`skill_${g}_${i}`); return el ? Number(el.value) : d; });
-        if (g === 'm') { mensPlayers = names; mensSkill = skills; } else { womensPlayers = names; womensSkill = skills; }
-      });
+      players = players.map((d, i) => { const el = document.getElementById(`name_${i}`); return el ? (el.value.trim() || d) : d; });
+      playerSkill = playerSkill.map((d, i) => { const el = document.getElementById(`skill_${i}`); return el ? Number(el.value) : d; });
     }
 
     let nameTimer = null;
@@ -798,24 +759,22 @@
       showToast(ok ? msg : 'Save failed — check connection', !ok);
     }
 
-    async function addPlayer(g) {
+    async function addPlayer() {
       if (currentMode !== 'scorekeeper') return;
       readEditor();
-      const L = live(g);
-      if (L.names.length >= MAX_PLAYERS) { showToast(`Maximum is ${MAX_PLAYERS} players per group`, true); return; }
-      L.ids.push(newId());
-      L.names.push(`${g === 'm' ? 'Man' : 'Woman'} ${L.names.length + 1}`);
-      L.skills.push(3);
+      if (players.length >= MAX_PLAYERS) { showToast(`Maximum is ${MAX_PLAYERS} players`, true); return; }
+      playerIds.push(newId());
+      players.push(`Player ${players.length + 1}`);
+      playerSkill.push(3);
       await afterRosterChange('✓ Player added — generate a new schedule');
     }
 
-    async function removePlayer(g, i) {
+    async function removePlayer(i) {
       if (currentMode !== 'scorekeeper') return;
       readEditor();
-      const L = live(g);
-      if (L.names.length <= MIN_PLAYERS) { showToast(`Need at least ${MIN_PLAYERS} players per group`, true); return; }
-      if (!confirm(`Remove ${L.names[i]}?\n\nThe current schedule keeps using them until you generate a new one.`)) return;
-      L.ids.splice(i, 1); L.names.splice(i, 1); L.skills.splice(i, 1);
+      if (players.length <= MIN_PLAYERS) { showToast(`Need at least ${MIN_PLAYERS} players`, true); return; }
+      if (!confirm(`Remove ${players[i]}?\n\nThe current schedule keeps using them until you generate a new one.`)) return;
+      playerIds.splice(i, 1); players.splice(i, 1); playerSkill.splice(i, 1);
       await afterRosterChange('✓ Player removed — generate a new schedule');
     }
 
@@ -831,7 +790,7 @@
 
     const pendingCheckins = () => Object.entries(CHECKINS)
       .filter(([, c]) => c && typeof c === 'object' && String(c.name || '').trim())
-      .map(([id, c]) => ({ id, name: String(c.name).trim().slice(0, 20), gender: c.gender === 'w' ? 'w' : 'm', skill: [1,2,3,4].includes(Number(c.skill)) ? Number(c.skill) : 3, ts: Number(c.ts) || 0 }))
+      .map(([id, c]) => ({ id, name: String(c.name).trim().slice(0, 20), skill: [1,2,3,4].includes(Number(c.skill)) ? Number(c.skill) : 3, ts: Number(c.ts) || 0 }))
       .sort((a, b) => a.ts - b.ts);
 
     function renderCheckins() {
@@ -843,7 +802,6 @@
       document.getElementById('checkin-toggle').innerText = checkinOpen ? '🟢 Check-in open (tap to close)' : '🔴 Check-in closed (tap to open)';
       box.innerHTML = items.length ? items.map(c => `
         <div class="flex items-center gap-2 flex-wrap bg-slate-800/80 border border-slate-700 rounded-lg p-2">
-          <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${c.gender === 'm' ? 'bg-sky-500/20 text-sky-300' : 'bg-pink-500/20 text-pink-300'}">${c.gender === 'm' ? 'MEN' : 'WOMEN'}</span>
           <span class="flex-1 min-w-[6rem] text-sm font-bold text-white">${esc(c.name)}</span>
           <select id="ci_skill_${c.id}" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
             ${[1,2,3,4].map(l => `<option value="${l}" ${(keep[c.id] || c.skill) === l ? 'selected' : ''}>${SKILLS[l].label}</option>`).join('')}
@@ -865,11 +823,10 @@
     async function addCheckinToRoster(id) {
       const c = pendingCheckins().find(x => x.id === id);
       if (!c) return false;
-      const g = c.gender, L = live(g);
-      if (L.ids.includes(id)) { delete CHECKINS[id]; return false; }
-      if (L.names.length >= MAX_PLAYERS) { showToast(`${g === 'm' ? 'Men' : 'Women'} group is full (${MAX_PLAYERS})`, true); return false; }
+      if (playerIds.includes(id)) { delete CHECKINS[id]; return false; }
+      if (players.length >= MAX_PLAYERS) { showToast(`Roster is full (${MAX_PLAYERS})`, true); return false; }
       const sel = document.getElementById('ci_skill_' + id);
-      L.ids.push(id); L.names.push(c.name); L.skills.push(sel ? Number(sel.value) : c.skill);
+      playerIds.push(id); players.push(c.name); playerSkill.push(sel ? Number(sel.value) : c.skill);
       delete CHECKINS[id];
       await removeCheckinRemote(id);
       return true;
@@ -907,7 +864,7 @@
     }
 
     // ---------- check-in: player side ----------
-    const ci = { gender: '', skill: 0 };
+    const ci = { skill: 0 };
     const CI_LEVELS = {
       1: ['Beginner', 'Just learning the game'],
       2: ['Low-Inter', 'Know the rules, still building consistency'],
@@ -936,7 +893,7 @@
     }
 
     function renderCheckinForm() {
-      ci.gender = ''; ci.skill = 0;
+      ci.skill = 0;
       let me = null;
       try { me = JSON.parse(localStorage.getItem('pb_checkin_me') || 'null'); } catch (e) {}
       ciSet(ciHeader('Pickleball Mini-Tourna') + `
@@ -946,16 +903,9 @@
           <input id="ci-name" type="text" maxlength="20" placeholder="e.g. Alex" autocomplete="off" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
         <div class="space-y-2">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">I play in the</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" data-g="m" onclick="ciPick('gender','m')" class="ci-g py-3 rounded-xl border border-slate-700 bg-slate-800 text-sm font-bold text-slate-300">👨 Men's group</button>
-            <button type="button" data-g="w" onclick="ciPick('gender','w')" class="ci-g py-3 rounded-xl border border-slate-700 bg-slate-800 text-sm font-bold text-slate-300">👩 Women's group</button>
-          </div>
-        </div>
-        <div class="space-y-2">
           <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Your skill level</label>
           <div class="space-y-2">
-            ${[1,2,3,4].map(l => `<button type="button" data-l="${l}" onclick="ciPick('skill',${l})" class="ci-l w-full text-left px-4 py-3 rounded-xl border border-slate-700 bg-slate-800">
+            ${[1,2,3,4].map(l => `<button type="button" data-l="${l}" onclick="ciPick(${l})" class="ci-l w-full text-left px-4 py-3 rounded-xl border border-slate-700 bg-slate-800">
               <div class="text-sm font-bold text-white">${CI_LEVELS[l][0]}</div><div class="text-xs text-slate-400">${CI_LEVELS[l][1]}</div></button>`).join('')}
           </div>
         </div>
@@ -964,11 +914,11 @@
         <p class="text-[11px] text-slate-500 text-center pb-6">After checking in you'll go straight to the live scoreboard.</p>`);
     }
 
-    function ciPick(kind, val) {
-      ci[kind] = val;
+    function ciPick(val) {
+      ci.skill = val;
       const on = 'border-emerald-400 bg-emerald-500/15 ring-2 ring-emerald-400/60';
-      document.querySelectorAll(kind === 'gender' ? '.ci-g' : '.ci-l').forEach(b => {
-        const sel = (kind === 'gender' ? b.dataset.g : Number(b.dataset.l)) === val;
+      document.querySelectorAll('.ci-l').forEach(b => {
+        const sel = Number(b.dataset.l) === val;
         on.split(' ').forEach(c => b.classList.toggle(c, sel));
         b.classList.toggle('border-slate-700', !sel);
         b.classList.toggle('bg-slate-800', !sel);
@@ -980,7 +930,6 @@
     async function submitCheckin() {
       const name = document.getElementById('ci-name').value.trim().replace(/\s+/g, ' ');
       if (!name) return ciError('Please enter your name.');
-      if (!ci.gender) return ciError('Please pick Men\'s or Women\'s group.');
       if (!ci.skill) return ciError('Please pick your skill level.');
       ciError('');
       const btn = document.getElementById('ci-submit');
@@ -988,19 +937,18 @@
       try {
         const [nRes, cRes] = await Promise.all([fb('names'), fb('checkins')]);
         const key = t => String(t).trim().toLowerCase();
-        const nd = nRes.ok ? await nRes.json() : null;
-        const g = ci.gender === 'm' ? parseGroup(nd && nd.men, null, DEFAULT_MEN, 'm') : parseGroup(nd && nd.women, null, DEFAULT_WOMEN, 'w');
+        const roster = parseRoster(nRes.ok ? await nRes.json() : null);
         const waiting = cRes.ok ? Object.values((await cRes.json()) || {}) : [];
-        const dupe = g.names.some(n => key(n) === key(name)) || waiting.some(c => c && c.gender === ci.gender && key(c.name) === key(name));
+        const dupe = roster.names.some(n => key(n) === key(name)) || waiting.some(c => c && key(c.name) === key(name));
         if (dupe) {
           ciError(`Someone named "${name}" is already on the list. If that's you, you're all set. If it's a different person, add a last initial.`);
           btn.disabled = false; btn.innerText = 'Check in';
           return;
         }
         const id = newId();
-        const r = await fb(`checkins/${id}`, 'PUT', JSON.stringify({ name, gender: ci.gender, skill: ci.skill, ts: Date.now() }), { auth: false });
+        const r = await fb(`checkins/${id}`, 'PUT', JSON.stringify({ name, skill: ci.skill, ts: Date.now() }), { auth: false });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        try { localStorage.setItem('pb_checkin_me', JSON.stringify({ id, name, g: ci.gender })); } catch (e) {}
+        try { localStorage.setItem('pb_checkin_me', JSON.stringify({ id, name })); } catch (e) {}
         ciSet(ciHeader('You\'re checked in! ✅') + `<p class="text-center text-sm text-slate-300">Welcome, <b>${esc(name)}</b>. The organizer will add you to the schedule.</p><p class="text-center text-xs text-slate-500">Taking you to the live scoreboard…</p>` + ciScoreboardBtn('Go now'));
         setTimeout(() => { window.location.href = baseUrl(); }, 2000);
       } catch (e) {
@@ -1010,8 +958,6 @@
     }
 
     // ---------- schedule generator (court queue) ----------
-    // Each player plays exactly g games, so N x g must be divisible by 4 (4 players per match),
-    // and g <= N-1 so nobody has to repeat a partner.
     // Every match has 4 players, so N x games should divide by 4 (and games <= N-1 so partners never repeat).
     // With "Allow fill-ins" on, any number works: a few players get one extra game that doesn't count for them.
     let allowFill = false;
@@ -1024,19 +970,14 @@
     function updatePlanHint() {
       const el = document.getElementById('rounds-hint');
       if (!el) return;
-      const fill = (id, N) => {
-        const sel = document.getElementById(id), opts = validOptions(N), old = Number(sel.value);
-        sel.innerHTML = opts.map(g => `<option value="${g}">${g} games each${fillIns(N, g) ? ` (+${fillIns(N, g)} fill-in)` : ''}</option>`).join('') || '<option value="0">none</option>';
-        sel.value = String(opts.includes(old) ? old : (opts.includes(4) ? 4 : (opts[0] || 0)));
-      };
-      fill('games-select-m', mensPlayers.length); fill('games-select-w', womensPlayers.length);
-      const gm = Number(document.getElementById('games-select-m').value), gw = Number(document.getElementById('games-select-w').value);
-      const part = (label, N, g) => `${label} (${N} players): ${g ? `${Math.ceil(N * g / 4)} matches, everyone plays ${g}${fillIns(N, g) ? ` (${fillIns(N, g)} player${fillIns(N, g) > 1 ? 's' : ''} play${fillIns(N, g) > 1 ? '' : 's'} 1 extra fill-in game that doesn't count)` : ''}.` : `no valid number of games — a group needs at least ${maxOpp > 1 ? 6 : 7} players.`} Choices: ${validOptions(N).join(', ') || '—'}.`;
-      el.innerText = part('Men', mensPlayers.length, gm) + ' ' + part('Women', womensPlayers.length, gw) + ` (Only numbers where nobody faces the same opponent more than ${maxOpp === 1 ? 'once' : 'twice'}${allowFill ? '' : ' and nobody needs a fill-in'} are listed.)`;
+      const N = players.length, sel = document.getElementById('games-select'), opts = validOptions(N), old = Number(sel.value);
+      sel.innerHTML = opts.map(g => `<option value="${g}">${g} games each${fillIns(N, g) ? ` (+${fillIns(N, g)} fill-in)` : ''}</option>`).join('') || '<option value="0">none</option>';
+      sel.value = String(opts.includes(old) ? old : (opts.includes(4) ? 4 : (opts[0] || 0)));
+      const g = Number(sel.value), f = g ? fillIns(N, g) : 0;
+      el.innerText = `${N} players: ${g ? `${Math.ceil(N * g / 4)} matches, everyone plays ${g}${f ? ` (${f} player${f > 1 ? 's' : ''} play${f > 1 ? '' : 's'} 1 extra fill-in game that doesn't count)` : ''}.` : 'no valid number of games with these settings.'} Choices: ${opts.join(', ') || '—'}. (Only numbers where nobody faces the same opponent more than ${maxOpp === 1 ? 'once' : 'twice'}${allowFill ? '' : ' and nobody needs a fill-in'} are listed.)`;
       const note = document.getElementById('roster-note');
       if (note) {
-        const stale = scheduleStale();
-        note.classList.toggle('hidden', !stale);
+        note.classList.toggle('hidden', !scheduleStale());
         note.innerText = rosterChanged()
           ? '⚠️ Players were added or removed. Everyone (including spectators) still sees the previous roster and schedule until you tap Generate.'
           : '⚠️ Skill levels changed since the schedule was generated. Tap Generate to re-balance the matches.';
@@ -1044,7 +985,8 @@
     }
 
     // Builds an ordered match list: every player exactly g games, no repeated partners,
-    // skill-balanced teams, few repeated opponents, and no back-to-back matches where possible.
+    // skill-balanced teams, few repeated opponents. Matches run two at a time (Court 1 and Court 2),
+    // so a player should not be in the match right before (other court) or two before (same court).
     function genQueue(skills, g) {
       const N = skills.length, TOT = N * g, M = Math.ceil(TOT / 4), L = 4 * M, F = L - TOT;
       const cost = S => {
@@ -1056,9 +998,8 @@
           if (++part[Math.min(a, b) * N + Math.max(a, b)] > 1) c += 500;
           if (++part[Math.min(x, y) * N + Math.max(x, y)] > 1) c += 500;
           c += 15 * Math.abs(skills[a] + skills[b] - skills[x] - skills[y]);
-          const A = [a, b], B = [x, y];
-          for (const u of A) for (const v of B) { const k = ++opp[Math.min(u, v) * N + Math.max(u, v)]; if (k > maxOpp) c += 200; else if (k > 1) c += 10; }
-          if (m > 0) for (let j = 0; j < 4; j++) for (let k = 1; k <= 4; k++) if (S[q + j] === S[q - k]) c += 30;
+          for (const u of [a, b]) for (const v of [x, y]) { const k = ++opp[Math.min(u, v) * N + Math.max(u, v)]; if (k > maxOpp) c += 200; else if (k > 1) c += 10; }
+          for (let k = 1; k <= 8 && q - k >= 0; k++) for (let j = 0; j < 4; j++) if (S[q + j] === S[q - k]) c += k <= 4 ? 40 : 20;
         }
         return c;
       };
@@ -1108,25 +1049,24 @@
         for (let m = M - 1; m >= 0; m--) if (sched[m].t1.includes(p) || sched[m].t2.includes(p)) { (sched[m].f = sched[m].f || []).push(p); break; }
       });
       const v = viol(best);
-      return { sched, maxGap, ok: v.pd === 0, oppRepeats: v.od, canAvoidOpp: true };
+      return { sched, maxGap, ok: v.pd === 0, oppRepeats: v.od };
     }
 
     async function generateSchedules() {
       if (currentMode !== 'scorekeeper' || generating) return;
       readEditor();
       updatePlanHint();
-      const gM = Number(document.getElementById('games-select-m').value), gW = Number(document.getElementById('games-select-w').value);
-      const nm = mensPlayers.length, nw = womensPlayers.length;
-      if (!validGames(nm, gM) || !validGames(nw, gW)) { showToast('Pick a valid number of games for both groups', true); return; }
-      const fi = (n, g) => fillIns(n, g) ? `, ${fillIns(n, g)} fill-in` : '';
-      if (!confirm(`Generate a new schedule?\n\nMen: ${nm} players, ${Math.ceil(nm * gM / 4)} matches (${gM} games each${fi(nm, gM)})\nWomen: ${nw} players, ${Math.ceil(nw * gW / 4)} matches (${gW} games each${fi(nw, gW)})\n\nThis clears ALL current scores (groups and playoffs).`)) return;
+      const gN = Number(document.getElementById('games-select').value), n = players.length;
+      if (!validGames(n, gN)) { showToast('Pick a valid number of games', true); return; }
+      const fi = fillIns(n, gN) ? `, ${fillIns(n, gN)} fill-in` : '';
+      if (!confirm(`Generate a new schedule?\n\n${n} players, ${Math.ceil(n * gN / 4)} matches (${gN} games each${fi})\n\nThis clears ALL current scores (group and playoffs).`)) return;
       generating = true;
       try {
         showToast('Generating…');
         await new Promise(r => setTimeout(r, 40));
-        const gm = genQueue(mensSkill, gM), gw = genQueue(womensSkill, gW);
-        const cp = x => { const L = live(x); return { ids: L.ids.slice(), names: L.names.slice(), skills: L.skills.slice() }; };
-        const payload = { m: gm.sched, w: gw.sched, snap: { m: cp('m'), w: cp('w') } };
+        const gm = genQueue(playerSkill, gN);
+        const L = live();
+        const payload = { single: true, m: gm.sched, snap: { m: { ids: L.ids.slice(), names: L.names.slice(), skills: L.skills.slice() } } };
         let ok = true, err = '';
         if (!CLOUD) {
           localStorage.setItem('pb_schedule', JSON.stringify(payload));
@@ -1144,15 +1084,14 @@
             if (!chk || !Array.isArray(chk.m) || chk.m.length !== gm.sched.length) throw new Error('schedule did not save');
           } catch (e) { ok = false; err = e.message; setSync(false, err); }
         }
-        SCHED = { m: payload.m, w: payload.w };
+        SCHED = { m: payload.m };
         SNAP = payload.snap;
-        matchScores = {}; TIEBREAKS = {}; DRAWS = {}; ORDER = { m: [], w: [] };
+        matchScores = {}; TIEBREAKS = {}; DRAWS = {}; ORDER = { m: [] };
         undoStack = []; Object.keys(unsynced).forEach(k => delete unsynced[k]);
         updateUndoUI(); updateUnsyncedUI();
         refreshAll(); updatePlanHint();
-        const oppBad = gm.oppRepeats || gw.oppRepeats;
-        const warn = (!(gm.ok && gw.ok) ? ' · ⚠ some partners repeat, try generating again' : '') + (oppBad ? ` · ⚠ some players face the same opponent more than ${maxOpp === 1 ? 'once' : 'twice'}, try generating again` : '');
-        showToast(ok ? `✓ Schedule ready · ${gm.sched.length} men's + ${gw.sched.length} women's matches · biggest team gap: men ${gm.maxGap}, women ${gw.maxGap}${warn}` : `Save failed (${err})`, !ok);
+        const warn = (!gm.ok ? ' · ⚠ some partners repeat, try generating again' : '') + (gm.oppRepeats ? ` · ⚠ some players face the same opponent more than ${maxOpp === 1 ? 'once' : 'twice'}, try generating again` : '');
+        showToast(ok ? `✓ Schedule ready · ${gm.sched.length} matches · biggest team gap: ${gm.maxGap}${warn}` : `Save failed (${err})`, !ok);
       } catch (e) {
         showToast('Error: ' + e.message, true);
       } finally {
@@ -1176,10 +1115,10 @@
     }
 
     // ---------- standings ----------
-    function calculateStats(players, genderKey) {
-      const stats = players.map((name, idx) => ({ name, idx, wins: 0, losses: 0, pointsScored: 0, pointsConceded: 0, diff: 0 }));
-      SCHED[genderKey].forEach((m, i) => {
-        const score = matchScores[qkey(genderKey, i)];
+    function calculateStats(names, g) {
+      const stats = names.map((name, idx) => ({ name, idx, wins: 0, losses: 0, pointsScored: 0, pointsConceded: 0, diff: 0 }));
+      SCHED[g].forEach((m, i) => {
+        const score = matchScores[qkey(g, i)];
         if (!hasScore(score)) return;
         const s1 = parseInt(score.s1) || 0, s2 = parseInt(score.s2) || 0;
         m.t1.forEach(p => { if (!stats[p] || (m.f && m.f.includes(p))) return; stats[p].pointsScored += s1; stats[p].pointsConceded += s2; if (s1 > s2) stats[p].wins++; else if (s2 > s1) stats[p].losses++; });
@@ -1187,14 +1126,12 @@
       });
       stats.forEach(s => s.diff = s.pointsScored - s.pointsConceded);
       stats.sort((a, b) => b.wins - a.wins || b.diff - a.diff || b.pointsScored - a.pointsScored);
-      return breakTies(stats, genderKey);
+      return breakTies(stats, g);
     }
 
     // Tie-breakers, applied only to players level on wins, point difference AND points scored:
-    //  4. Tiebreaker matches (only if the scorekeeper created them): most wins in those 1-on-1 games
-    //  5. Head-to-head - only when exactly two players are still tied and they played AGAINST each other
-    //  6. Opponents' total wins   7. Opponents' opponents' wins (the same sum, one level deeper)
-    //  8. Draw - run live by the scorekeeper (shown on screen) and saved, so it can never change
+    //  head-to-head (2 players), opponents' total wins, opponents' opponents' wins,
+    //  then tiebreaker games or a draw run live by the scorekeeper (saved, so it never changes)
     const sameTriple = (a, b) => a.wins === b.wins && a.diff === b.diff && a.pointsScored === b.pointsScored;
     function breakTies(stats, g) {
       const ids = active(g).ids, by = {}, idxOf = {};
@@ -1218,9 +1155,7 @@
       stats.forEach(s => { s.opp2Wins = s.opps.reduce((t, o) => t + by[o].oppWins, 0); });
       const sep = {}, pending = [];
       const markSep = (A, B, step) => A.forEach(x => B.forEach(y => { if (x !== y) { sep[x.idx + '|' + y.idx] = step; sep[y.idx + '|' + x.idx] = step; } }));
-      const idsOf = list => list.map(s => ids[s.idx]);
-      const keyOf = list => idsOf(list).sort().join('_');
-      // still level: use a saved draw if one was run, otherwise wait for the scorekeeper (draw, or tiebreaker games for 2-4 players)
+      const keyOf = list => list.map(s => ids[s.idx]).sort().join('_');
       const drawOrPending = (list, offerTb) => {
         const key = keyOf(list), d = DRAWS[key];
         if (d && Array.isArray(d.order) && d.order.length === list.length && list.every(s => d.order.includes(ids[s.idx]))) {
@@ -1235,7 +1170,7 @@
         return list;
       };
       const STEPS = ['h2h', 'sos', 'final'];
-      const LABEL = { tbm: 'Tiebreaker match wins', sos: "Opponents' total wins", sos2: "Opponents' opponents' wins" };
+      const LABEL = { sos: "Opponents' total wins", sos2: "Opponents' opponents' wins" };
       const resolve = (list, from) => {
         if (list.length < 2) return list;
         for (let k = from; k < STEPS.length; k++) {
@@ -1281,7 +1216,7 @@
           const vals = [...new Set(list.map(val))].sort((x, y) => y - x);
           if (vals.length < 2) continue;
           const groups = vals.map(v => list.filter(s => val(s) === v));
-          groups.forEach(gp => gp.forEach(s => { s.tb = { step: st, text: st === 'tbm' ? `Tiebreaker games: ${s.tbWins} won, point difference ${s.tbDiff > 0 ? '+' : ''}${s.tbDiff}` : `${LABEL[st]}: ${val(s)}`, grp: list }; }));
+          groups.forEach(gp => gp.forEach(s => { s.tb = { step: st, text: `${LABEL[st]}: ${val(s)}`, grp: list }; }));
           for (let x = 0; x < groups.length; x++) for (let y = x + 1; y < groups.length; y++) markSep(groups[x], groups[y], st);
           let out = [];
           groups.forEach(gp => { out = out.concat(resolve(gp, k + 1)); });
@@ -1356,7 +1291,7 @@
       } else if (t.step === 'tbm' || t.step === 'tbpending') {
         const e = TIEBREAKS[tieKey(g, grp)];
         if (e && Array.isArray(e.matches)) {
-          body += box('Tiebreaker games (first to 7, no deuce)', `<div class="text-xs text-slate-300 space-y-0.5">${e.matches.map(m => `<div>${m.t1.map(nmz).join(' &amp; ')} <b class="text-white">${m.s1 === '' ? '–' : m.s1}–${m.s2 === '' ? '–' : m.s2}</b> ${m.t2.map(nmz).join(' &amp; ')}</div>`).join('')}</div><div class="text-[11px] text-slate-400">Most wins in these games ranks higher, then point difference in them.</div>`);
+          body += box('Tiebreaker games (first to 7, no deuce)', `<div class="text-xs text-slate-300 space-y-0.5">${e.matches.map(m => `<div>${m.t1.map(id => nmz(A.ids.indexOf(id))).join(' &amp; ')} <b class="text-white">${m.s1 === '' ? '–' : m.s1}–${m.s2 === '' ? '–' : m.s2}</b> ${m.t2.map(id => nmz(A.ids.indexOf(id))).join(' &amp; ')}</div>`).join('')}</div><div class="text-[11px] text-slate-400">Most wins in these games ranks higher, then point difference in them.</div>`);
         }
       } else if (t.step === 'draw') {
         const d = DRAWS[tieKey(g, grp)];
@@ -1367,13 +1302,14 @@
       const sub = t.step === 'sos' ? `Tougher opponents (OPP W): ${p.oppWins}` : t.step === 'sos2' ? `Even tougher opponents (OPP²): ${p.opp2Wins}` : `${titles[t.step]} — ${esc(t.text)}`;
       return { title: `Why ${esc(p.name)} is #${rank}`, sub, body };
     }
+
     // Tap W-L / DIFF / PTS: every game that makes up the numbers
     function showScoreInfo(g, idx) {
       const A = active(g), st = calculateStats(A.names, g), p = st.find(s => s.idx === idx);
       if (!p) return;
       const rows = playerRows(g, idx), name = esc(A.names[idx]);
       const row = r => {
-        const who = `<span class="text-slate-400">#${r.n + 1}</span> with <b class="text-white">${esc(r.partner.join(' &amp; '))}</b> vs ${esc(r.opps.join(' &amp; '))}`;
+        const who = `<span class="text-slate-400">#${r.n + 1}</span> with <b class="text-white">${esc(r.partner.join(' & '))}</b> vs ${esc(r.opps.join(' & '))}`;
         if (!r.scored && r.tie) return `<div class="flex justify-between gap-2 py-1.5 border-b border-slate-700/40 text-xs"><div>${who}</div><div class="text-right text-amber-300 font-bold">⚠ tied ${r.tieScore}–${r.tieScore}<br><span class="text-[10px] font-normal">no winner, not counted</span></div></div>`;
         if (!r.scored) return `<div class="flex justify-between gap-2 py-1.5 border-b border-slate-700/40 text-xs text-slate-500"><div>${who}</div><div class="whitespace-nowrap">not played yet</div></div>`;
         if (r.fill) return `<div class="flex justify-between gap-2 py-1.5 border-b border-slate-700/40 text-xs opacity-60"><div>${who}<br><span class="text-violet-300 font-bold text-[10px]">FILL-IN · NOT COUNTED</span></div><div class="text-right whitespace-nowrap text-slate-400 line-through">${r.res.my}–${r.res.op}</div></div>`;
@@ -1398,12 +1334,12 @@
       const counted = list.filter(m => (m.t1.includes(idx) || m.t2.includes(idx)) && !(m.f && m.f.includes(idx))).length;
       const fillers = [...new Set(list.flatMap(m => m.f || []))].map(i => esc(A.names[i]));
       const mt = list[mi], others = [...mt.t1, ...mt.t2].filter(x => x !== idx), fillOthers = others.filter(x => mt.f.includes(x)).map(x => esc(A.names[x])), realOthers = others.filter(x => !mt.f.includes(x)).map(x => esc(A.names[x]));
-      const F = fillers.length, empty = 4 * M - N * counted, group = g === 'm' ? "men's" : "women's";
+      const F = fillers.length, empty = 4 * M - N * counted;
       document.getElementById('tie-title').innerHTML = `${name} is a fill-in`;
-      document.getElementById('tie-sub').innerHTML = `${GL(g)} match #${mi + 1}`;
+      document.getElementById('tie-sub').innerHTML = `Match #${mi + 1}`;
       document.getElementById('tie-body').innerHTML = `<div class="text-sm text-slate-200 space-y-3">
-        <p>A match needs 4 players. In the ${group} group, ${N} players × ${counted} games = ${N * counted} spots, but ${M} matches have ${4 * M}. So <b class="text-white">${empty} spot${empty === 1 ? ' was' : 's were'} empty</b>, and ${F} player${F === 1 ? '' : 's'} (${fillers.join(', ')}) ${F === 1 ? 'plays' : 'each play'} <b class="text-white">1 extra game</b> to fill ${empty === 1 ? 'it' : 'them'}. ${F === 1 ? 'They were' : 'They were'} picked at random.</p>
-        <p>🚫 <b class="text-white">${name}'s extra game (match #${mi + 1}) doesn't count</b> for their wins, points or tiebreaks.${fillOthers.length ? ` ${fillOthers.join(' and ')} ${fillOthers.length === 1 ? 'is' : 'are'} also ${fillOthers.length === 1 ? 'a fill-in' : 'fill-ins'} in this match, so it doesn't count for ${fillOthers.length === 1 ? 'them' : 'them'} either. It counts normally for ${realOthers.join(' and ')}.` : ` It counts normally for the other 3 players in the match (${realOthers.join(', ')}).`}</p>
+        <p>A match needs 4 players. ${N} players × ${counted} games = ${N * counted} spots, but ${M} matches have ${4 * M}. So <b class="text-white">${empty} spot${empty === 1 ? ' was' : 's were'} empty</b>, and ${F} player${F === 1 ? '' : 's'} (${fillers.join(', ')}) ${F === 1 ? 'plays' : 'each play'} <b class="text-white">1 extra game</b> to fill ${empty === 1 ? 'it' : 'them'}. They were picked at random.</p>
+        <p>🚫 <b class="text-white">${name}'s extra game (match #${mi + 1}) doesn't count</b> for their wins, points or tiebreaks.${fillOthers.length ? ` ${fillOthers.join(' and ')} ${fillOthers.length === 1 ? 'is' : 'are'} also ${fillOthers.length === 1 ? 'a fill-in' : 'fill-ins'} in this match, so it doesn't count for them either. It counts normally for ${realOthers.join(' and ')}.` : ` It counts normally for the other 3 players in the match (${realOthers.join(', ')}).`}</p>
         <p>✅ Everyone still has exactly <b class="text-white">${counted} counted games</b>.</p></div>`;
       document.getElementById('tie-modal').classList.remove('hidden');
     }
@@ -1420,25 +1356,25 @@
 
     // Plain-language note when a tie touches the playoff spots
     function cutNote(data) {
-      const notes = [], a = data[3], b = data[4];
+      const notes = [], a = data[PLAYOFF_SPOTS - 1], b = data[PLAYOFF_SPOTS];
       if (a && b && sameTriple(a, b)) {
         const st = data.sep && data.sep[a.idx + '|' + b.idx], A = esc(a.name), B = esc(b.name);
         const lead = `⚖️ Last playoff spot: ${A} and ${B} were level, so ${A} gets it`;
         if (st === 'tbm') notes.push(a.tbWins !== b.tbWins ? `${lead} by winning more tiebreaker games (${a.tbWins} vs ${b.tbWins}).` : `${lead}: they won the same number of tiebreaker games (${a.tbWins}), so it goes to point difference in those games (${a.tbDiff > 0 ? '+' : ''}${a.tbDiff} vs ${b.tbDiff > 0 ? '+' : ''}${b.tbDiff}).`);
         else if (st === 'h2h') notes.push(`${lead} by winning when they played each other.`);
         else if (st === 'sos') notes.push(`${lead} for facing tougher opponents (${A}'s opponents won ${a.oppWins} games in total, vs ${b.oppWins} for ${B}'s opponents).`);
-        else if (st === 'sos2') notes.push(`⚖️ Last playoff spot: ${A} and ${B} were also level on opponents' wins (${a.oppWins} each), so ${A} gets it on opponents' opponents' wins (the players ${A}'s opponents faced won ${a.opp2Wins} games in total, vs ${b.opp2Wins} for ${B}'s).`);
+        else if (st === 'sos2') notes.push(`⚖️ Last playoff spot: ${A} and ${B} were also level on opponents' wins (${a.oppWins} each), so ${A} gets it on opponents' opponents' wins (${a.opp2Wins} vs ${b.opp2Wins}).`);
         else if (st === 'draw') notes.push(`${lead} because the draw run by the scorekeeper put them ahead. They were level on everything else.`);
         else if (st === 'tbpending') notes.push(`⏳ Last playoff spot: ${A} and ${B} are level on everything. Tiebreaker games are in progress.`);
         else if (st === 'drawpending') notes.push(`⏳ Last playoff spot: ${A} and ${B} are level on everything. A draw or tiebreaker games are needed — waiting for the scorekeeper.`);
       }
       const drawn = [], waiting = [];
-      for (let k = 0; k + 1 < 4 && k + 1 < data.length; k++) {
+      for (let k = 0; k + 1 < PLAYOFF_SPOTS && k + 1 < data.length; k++) {
         const st = data.sep && data.sep[data[k].idx + '|' + data[k + 1].idx], pair = `${esc(data[k].name)} / ${esc(data[k + 1].name)}`;
         if (st === 'draw') drawn.push(pair); else if (st === 'drawpending' || st === 'tbpending') waiting.push(pair);
       }
-      if (drawn.length) notes.push(`🎲 The draw only put these in order: ${drawn.join(', ')}. They all qualify, so it only affects the playoff seeding.`);
-      if (waiting.length) notes.push(`⏳ A draw or tiebreaker is still needed to order: ${waiting.join(', ')}. They all qualify, so it only affects the playoff seeding.`);
+      if (drawn.length) notes.push(`🎲 The draw only put these in order: ${drawn.join(', ')}. They all qualify, so it only affects playoff seeding (who partners whom).`);
+      if (waiting.length) notes.push(`⏳ A draw or tiebreaker is still needed to order: ${waiting.join(', ')}. They all qualify, so it only affects playoff seeding (who partners whom).`);
       return notes.join('<br>');
     }
 
@@ -1449,6 +1385,14 @@
     }
 
     const tbDescribe = k => `First to 7, no deuce. ${k === 2 ? '1 game, 1-on-1.' : k === 3 ? '3 games, 1-on-1: everyone plays the other two.' : '3 doubles games: everyone partners each of the other three once.'} Only the tied players play.`;
+    const tbMatches = ids => {
+      const k = ids.length;
+      const ms = k === 2 ? [{ t1: [ids[0]], t2: [ids[1]] }]
+        : k === 3 ? [{ t1: [ids[0]], t2: [ids[1]] }, { t1: [ids[1]], t2: [ids[2]] }, { t1: [ids[2]], t2: [ids[0]] }]
+        : [{ t1: [ids[0], ids[1]], t2: [ids[2], ids[3]] }, { t1: [ids[0], ids[2]], t2: [ids[1], ids[3]] }, { t1: [ids[0], ids[3]], t2: [ids[1], ids[2]] }];
+      ms.forEach(m => { m.s1 = ''; m.s2 = ''; });
+      return ms;
+    };
 
     function renderTieTools(id, g, st) {
       const el = document.getElementById(id);
@@ -1458,21 +1402,20 @@
       const A = active(g), sk = currentMode === 'scorekeeper', rank = s => st.indexOf(s);
       const nm = i => esc(A.names[A.ids.indexOf(i)]);
       let html = '';
-      (st.pending || []).filter(p => Math.min(...p.members.map(rank)) < 4).forEach(p => {
-        const atCut = p.members.some(s => rank(s) >= 4);
+      (st.pending || []).filter(p => Math.min(...p.members.map(rank)) < PLAYOFF_SPOTS).forEach(p => {
+        const atCut = p.members.some(s => rank(s) >= PLAYOFF_SPOTS);
         html += `<div class="space-y-2 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2">
           <div class="text-xs text-rose-200 font-semibold">${atCut ? '⚔️ Level on everything for the last playoff spot' : '🎲 Level on everything (only affects playoff seeding)'}: ${p.members.map(s => esc(s.name)).join(', ')}.</div>
           ${sk ? `<div class="flex flex-wrap gap-2">${p.canTb ? `<button onclick="createTiebreak('${g}','${p.key}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg">⚔️ Play tiebreaker games</button>` : ''}<button onclick="runDraw('${g}','${p.key}')" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs rounded-lg">🎲 Run draw</button></div>
           ${p.canTb ? `<div class="text-[11px] text-slate-400">${tbDescribe(p.members.length)}</div>` : ''}` : '<div class="text-[11px] text-slate-400">Waiting for the scorekeeper to run tiebreaker games or a draw.</div>'}</div>`;
       });
-      // a draw already decided the order of 2-4 players in the top 4: the scorekeeper can swap it for tiebreaker games
       const seenDraw = new Set();
       st.forEach(p => {
         if (!p.tb || p.tb.step !== 'draw') return;
         const grp = p.tb.grp, key = grp.map(x => A.ids[x.idx]).sort().join('_');
         if (seenDraw.has(key)) return;
         seenDraw.add(key);
-        if (grp.length < 2 || grp.length > 4 || Math.min(...grp.map(rank)) >= 4) return;
+        if (grp.length < 2 || grp.length > 4 || Math.min(...grp.map(rank)) >= PLAYOFF_SPOTS) return;
         html += `<div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/70 border border-rose-500/30 rounded-lg p-2">
           <span class="text-xs text-rose-200 font-semibold">🎲 A draw put these in order: ${grp.slice().sort((x, y) => rank(x) - rank(y)).map(x => esc(x.name)).join(' → ')}.</span>
           ${sk ? `<button onclick="tiebreakInstead('${g}','${key}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg">⚔️ Play tiebreaker games instead</button>` : ''}</div>`;
@@ -1494,556 +1437,8 @@
       el.classList.toggle('hidden', !html);
     }
 
-    // Tiebreaker games for 2-4 players still level on everything. Only the tied players play.
     async function createTiebreak(g, key) {
       if (currentMode !== 'scorekeeper') return;
       const A = active(g), p = (calculateStats(A.names, g).pending || []).find(x => x.key === key);
       if (!p || !p.canTb) { showToast('That tie is already settled', true); return; }
-      const ids = p.members.map(s => A.ids[s.idx]), k = ids.length;
-      const matches = k === 2 ? [{ t1: [ids[0]], t2: [ids[1]] }]
-        : k === 3 ? [{ t1: [ids[0]], t2: [ids[1]] }, { t1: [ids[1]], t2: [ids[2]] }, { t1: [ids[2]], t2: [ids[0]] }]
-        : [{ t1: [ids[0], ids[1]], t2: [ids[2], ids[3]] }, { t1: [ids[0], ids[2]], t2: [ids[1], ids[3]] }, { t1: [ids[0], ids[3]], t2: [ids[1], ids[2]] }];
-      matches.forEach(m => { m.s1 = ''; m.s2 = ''; });
-      if (!confirm(`Tiebreaker games for:\n${p.members.map(s => s.name).join(', ')}\n\n${matches.length} game${matches.length > 1 ? 's' : ''}, first to 7, no deuce. ${k === 4 ? 'Doubles: everyone partners each other player once.' : '1-on-1.'} Only these players play.\n\nMost wins decides, then point difference in these games.`)) return;
-      TIEBREAKS[key] = { g, ids, matches };
-      const ok = await putNode(`tiebreaks/${key}`, TIEBREAKS[key]);
-      renderStandings(); renderPlayoffs();
-      showToast(ok ? '✓ Tiebreaker games created' : 'Save failed — check connection', !ok);
-    }
-
-    // Replace a draw that was already run with tiebreaker games between the same players
-    async function tiebreakInstead(g, key) {
-      if (currentMode !== 'scorekeeper') return;
-      const A = active(g), st = calculateStats(A.names, g);
-      const members = st.filter(s => s.tb && s.tb.step === 'draw' && s.tb.grp.map(x => A.ids[x.idx]).sort().join('_') === key);
-      const k = members.length;
-      if (k < 2 || k > 4) { showToast('That draw can no longer be replaced', true); return; }
-      const ids = members.map(s => A.ids[s.idx]);
-      const matches = k === 2 ? [{ t1: [ids[0]], t2: [ids[1]] }]
-        : k === 3 ? [{ t1: [ids[0]], t2: [ids[1]] }, { t1: [ids[1]], t2: [ids[2]] }, { t1: [ids[2]], t2: [ids[0]] }]
-        : [{ t1: [ids[0], ids[1]], t2: [ids[2], ids[3]] }, { t1: [ids[0], ids[2]], t2: [ids[1], ids[3]] }, { t1: [ids[0], ids[3]], t2: [ids[1], ids[2]] }];
-      matches.forEach(m => { m.s1 = ''; m.s2 = ''; });
-      if (!confirm(`Replace the draw with tiebreaker games for:\n${members.map(s => s.name).join(', ')}\n\n${matches.length} game${matches.length > 1 ? 's' : ''}, first to 7, no deuce. The draw result is removed and the games decide the order instead.`)) return;
-      delete DRAWS[key];
-      const ok1 = await putNode(`draws/${key}`, null);
-      TIEBREAKS[key] = { g, ids, matches };
-      const ok2 = await putNode(`tiebreaks/${key}`, TIEBREAKS[key]);
-      renderStandings(); renderPlayoffs();
-      showToast(ok1 && ok2 ? '✓ Tiebreaker games created' : 'Save failed — check connection', !(ok1 && ok2));
-    }
-
-    async function removeTiebreaks(key) {
-      if (currentMode !== 'scorekeeper' || !confirm('Remove these tiebreaker games and their scores?')) return;
-      delete TIEBREAKS[key];
-      const ok = await putNode(`tiebreaks/${key}`, null);
-      renderStandings(); renderPlayoffs();
-      showToast(ok ? '✓ Removed' : 'Save failed — check connection', !ok);
-    }
-
-    const tbTimers = {};
-    function queueTbSave(key, n) {
-      const tk = key + '_' + n;
-      clearTimeout(tbTimers[tk]);
-      tbTimers[tk] = setTimeout(async () => {
-        const m = TIEBREAKS[key] && TIEBREAKS[key].matches[n];
-        if (!m) return;
-        m.s1 = document.getElementById(`tb_${key}_${n}_s1`).value; m.s2 = document.getElementById(`tb_${key}_${n}_s2`).value;
-        const ok = await putNode(`tiebreaks/${key}/matches/${n}`, { t1: m.t1, t2: m.t2, s1: m.s1, s2: m.s2 });
-        renderStandings(); renderPlayoffs();
-        const a = +m.s1, b = +m.s2, bad = m.s1 !== '' && m.s2 !== '' && !(Math.max(a, b) === 7 && a !== b);
-        showToast(!ok ? 'Save failed — check connection' : bad ? 'Saved — but it only counts once the winner has exactly 7 (first to 7, no deuce)' : '✓ Saved', !ok || bad);
-      }, 700);
-    }
-
-    // The draw is random, run on screen by the scorekeeper, and saved so it never changes
-    async function runDraw(g, key) {
-      if (currentMode !== 'scorekeeper') return;
-      const A = active(g), p = (calculateStats(A.names, g).pending || []).find(x => x.key === key);
-      if (!p) { showToast('That tie is already settled', true); return; }
-      const order = p.members.map(s => A.ids[s.idx]);
-      const buf = new Uint32Array(order.length);
-      (window.crypto || { getRandomValues: a => a.forEach((_, i) => { a[i] = Math.random() * 4294967296; }) }).getRandomValues(buf);
-      const sorted = order.map((id, i) => ({ id, r: buf[i] })).sort((x, y) => x.r - y.r).map(x => x.id);
-      DRAWS[key] = { order: sorted, ts: Date.now() };
-      const ok = await putNode(`draws/${key}`, DRAWS[key]);
-      showDrawModal(p.members.map(s => s.name), sorted.map(id => A.names[A.ids.indexOf(id)]), ok);
-    }
-
-    function showDrawModal(names, final, ok) {
-      const m = document.getElementById('draw-modal'), box = document.getElementById('draw-body'), btn = document.getElementById('draw-close');
-      m.classList.remove('hidden'); btn.classList.add('hidden');
-      document.getElementById('draw-title').innerText = 'Drawing…';
-      let n = 0;
-      const t = setInterval(() => {
-        box.innerHTML = names.slice().sort(() => Math.random() - 0.5).map(x => `<div class="py-2 text-slate-400 font-bold">${esc(x)}</div>`).join('');
-        if (++n >= 22) {
-          clearInterval(t);
-          document.getElementById('draw-title').innerText = ok ? 'Draw result' : 'Draw result (not saved — check connection)';
-          box.innerHTML = final.map((x, i) => `<div class="py-2 text-xl font-extrabold text-white">${i + 1}. ${esc(x)}</div>`).join('');
-          btn.classList.remove('hidden');
-        }
-      }, 90);
-    }
-    function closeDrawModal() { document.getElementById('draw-modal').classList.add('hidden'); renderStandings(); renderPlayoffs(); }
-
-    function nameBtn(g, i) {
-      const A = active(g);
-      const mine = ME && A.ids[i] === ME.id;
-      return `<button type="button" onclick="openPlayerCard('${g}', ${i})" class="hover:underline text-left">${mine ? '⭐ ' : ''}${esc(A.names[i])}</button>`;
-    }
-
-    function renderStandings() {
-      const renderBody = (id, data, A, g) => {
-        document.getElementById(id).innerHTML = data.map((p, idx) => `
-          <tr class="${idx < 4 ? 'bg-emerald-500/10 font-bold' : ''}">
-            <td class="py-2.5 px-1 font-mono text-slate-400">${idx + 1}</td>
-            <td class="py-2.5 px-2"><span class="text-white">${nameBtn(g, p.idx)}</span>${skillTag(A.skills[p.idx])}${idx < 4 ? '<span class="ml-1 text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded">QUAL</span>' : ''}${tbBadge(p, g)}</td>
-            <td class="py-2.5 px-2 text-center font-mono text-slate-300"><button type="button" onclick="showScoreInfo('${g}', ${p.idx})" title="Tap to see how this is worked out" class="underline decoration-dotted decoration-slate-500 cursor-pointer">${p.wins}-${p.losses}</button></td>
-            <td class="py-2.5 px-2 text-center font-mono ${p.diff > 0 ? 'text-emerald-400' : p.diff < 0 ? 'text-rose-400' : 'text-slate-400'}"><button type="button" onclick="showScoreInfo('${g}', ${p.idx})" title="Tap to see how this is worked out" class="underline decoration-dotted decoration-slate-500 cursor-pointer">${p.diff > 0 ? '+' : ''}${p.diff}</button></td>
-            <td class="py-2.5 px-2 text-center font-mono text-white"><button type="button" onclick="showScoreInfo('${g}', ${p.idx})" title="Tap to see how this is worked out" class="underline decoration-dotted decoration-slate-500 cursor-pointer">${p.pointsScored}</button></td>
-          </tr>`).join('');
-      };
-      const am = active('m'), aw = active('w');
-      const sm = calculateStats(am.names, 'm'), sw = calculateStats(aw.names, 'w');
-      renderBody('mens-standings-body', sm, am, 'm');
-      renderBody('womens-standings-body', sw, aw, 'w');
-      const setNote = (id, t) => { const el = document.getElementById(id); if (el) { el.innerHTML = t; el.classList.toggle('hidden', !t); } };
-      setNote('mens-tb-note', cutNote(sm)); setNote('womens-tb-note', cutNote(sw));
-      renderTieTools('mens-tb-tools', 'm', sm); renderTieTools('womens-tb-tools', 'w', sw);
-    }
-
-    // ---------- court queue logic ----------
-    const GL = g => g === 'm' ? 'Men' : 'Women';
-    const teamText = (g, t) => { const A = active(g); return t.map(i => esc(A.names[i] ?? '?')).join(' &amp; '); };
-    const matchText = (g, i) => { const m = SCHED[g][i]; return `${teamText(g, m.t1)} <span class="text-slate-400 font-normal">vs</span> ${teamText(g, m.t2)}`; };
-    const sharesPlayer = (g, a, b) => { const A = SCHED[g][a], B = SCHED[g][b], s = [...A.t1, ...A.t2]; return [...B.t1, ...B.t2].some(p => s.includes(p)); };
-
-    // Works out what is on court now / next from the scores alone.
-    // While both groups have matches left: men on Court 1, women on Court 2.
-    // Once one group is finished: both courts serve the remaining group
-    // (court 0 = "whichever court is free"), never two matches that share a player.
-    // Court 1 = men's queue, Court 2 = women's queue. If one group has more matches, its extra
-    // matches (from the end of its queue) move to the other court so both courts get an equal share.
-    function courtLists() {
-      const M = SCHED.m.length, W = SCHED.w.length, T = M + W, c1 = [], c2 = [];
-      if (W >= M) {
-        const K = Math.min(W, Math.floor(T / 2));
-        orderOf('m').forEach(i => c1.push({ g: 'm', i }));
-        orderOf('w').forEach((i, pos) => (pos < K ? c2 : c1).push({ g: 'w', i }));
-      } else {
-        const J = Math.min(M, Math.ceil(T / 2));
-        orderOf('w').forEach(i => c2.push({ g: 'w', i }));
-        orderOf('m').forEach((i, pos) => (pos < J ? c1 : c2).push({ g: 'm', i }));
-      }
-      return { 1: c1, 2: c2 };
-    }
-
-    // What is on each court now / next, worked out from the scores alone.
-    // A court never gets a match that shares a player with the match on the other court (it stays open instead).
-    function courtPlan() {
-      const CL = courtLists(), st = {};
-      const pend = c => CL[c].filter(e => !isScored(e.g, e.i));
-      const clash = (a, b) => a && b && a.g === b.g && sharesPlayer(a.g, a.i, b.i);
-      const p2 = pend(2), p1 = pend(1);
-      const now2 = p2[0], now1 = p1.find(e => !clash(e, now2));
-      const put = (e, state, court) => { if (e) st[qkey(e.g, e.i)] = { g: e.g, i: e.i, state, court }; };
-      put(now2, 'now', 2); put(now1, 'now', 1);
-      put(p2.find(e => e !== now2), 'next', 2);
-      put(p1.find(e => e !== now1 && !clash(e, now2)) || p1.find(e => e !== now1), 'next', 1);
-      return st;
-    }
-
-    function renderBoard(st) {
-      const el = document.getElementById('courts-board');
-      if (!el) return;
-      if (!hasSchedule()) {
-        el.innerHTML = `<div class="md:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-5 text-sm text-slate-300 text-center">No schedule yet.${currentMode === 'scorekeeper' ? ' Go to Players &amp; Skills and tap “Generate schedule”.' : ' The scorekeeper will publish it soon.'}</div>`;
-        return;
-      }
-      st = st || courtPlan();
-      const ent = Object.values(st);
-      if (!ent.length) { el.innerHTML = `<div class="md:col-span-2 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 text-sm font-bold text-emerald-300 text-center">🎉 Group stage complete — head to the Mixed Playoffs!</div>`; return; }
-      const ord = state => ent.filter(e => e.state === state).sort((a, b) => a.g === b.g ? a.i - b.i : (a.g === 'm' ? -1 : 1));
-      const cols = { 1: { now: null, next: null }, 2: { now: null, next: null } };
-      const shared = ent.every(e => e.court === 0);
-      if (shared) { const n = ord('now'), x = ord('next'); cols[1].now = n[0]; cols[2].now = n[1]; cols[1].next = x[0]; cols[2].next = x[1]; }
-      else ent.forEach(e => { cols[e.court][e.state] = e; });
-      const line = e => `<span class="text-slate-400 text-[10px] font-bold uppercase">${GL(e.g)} #${e.i + 1}</span><br>${matchText(e.g, e.i)}`;
-      const card = c => `<div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 space-y-3">
-          <div class="text-xs font-extrabold uppercase tracking-wider ${c === 1 ? 'text-sky-400' : 'text-pink-400'}">Court ${c}</div>
-          <div class="rounded-xl p-3 ${cols[c].now ? 'bg-rose-500/10 border border-rose-500/40' : 'bg-slate-900/60 border border-slate-700'}">
-            <div class="text-[10px] font-bold uppercase tracking-wider ${cols[c].now ? 'text-rose-300' : 'text-slate-500'} mb-1">${cols[c].now ? '🔴 Now playing' : 'Court free'}</div>
-            <div class="text-sm font-bold text-white">${cols[c].now ? line(cols[c].now) : '—'}</div>
-          </div>
-          <div class="rounded-xl p-3 bg-amber-500/5 border border-amber-500/30">
-            <div class="text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1">⏭ Up next</div>
-            <div class="text-sm font-semibold text-slate-200">${cols[c].next ? line(cols[c].next) : '—'}</div>
-          </div></div>`;
-      el.innerHTML = card(1) + card(2) + (shared ? `<div class="md:col-span-2 text-[11px] text-slate-400 text-center">${GL(ent[0].g)}'s group is now using both courts — whichever court frees up first takes the next match.</div>` : '');
-    }
-
-    function renderLiveStrip() {
-      const el = document.getElementById('live-strip');
-      if (!el) return;
-      const nowList = Object.values(courtPlan()).filter(e => e.state === 'now');
-      if (!nowList.length) { el.classList.add('hidden'); el.innerHTML = ''; return; }
-      const me = meSummary();
-      el.innerHTML = `<button onclick="goLive()" class="w-full text-left bg-rose-500/10 border border-rose-500/40 hover:bg-rose-500/15 rounded-xl px-4 py-2.5 transition">
-        <div class="flex items-center gap-2 text-sm"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse flex-shrink-0"></span><span class="font-extrabold text-rose-300">NOW PLAYING</span></div>
-        <div class="mt-1 space-y-0.5 text-xs text-slate-200">${nowList.map(e => `<div><span class="font-bold text-slate-400">${GL(e.g)} #${e.i + 1}${e.court ? ' · Court ' + e.court : ''}:</span> ${matchText(e.g, e.i).replace(/<[^>]+>/g, m => m.startsWith('<span') || m === '</span>' ? '' : m)}</div>`).join('')}</div>
-        ${me ? `<div class="text-xs text-emerald-300 mt-1 font-semibold">${me}</div>` : ''}</button>`;
-      el.classList.remove('hidden');
-    }
-    function goLive() { switchTab('matches'); }
-
-    // ---------- player view ----------
-    function loadMe() {
-      try {
-        const a = JSON.parse(localStorage.getItem('pb_me') || 'null');
-        const b = JSON.parse(localStorage.getItem('pb_checkin_me') || 'null');
-        if (a && a.off) ME = null;
-        else if (a && a.id) ME = a;
-        else if (b && b.id) ME = { g: b.g || null, id: b.id };
-        else ME = null;
-      } catch (e) { ME = null; }
-    }
-    function meIndex() {
-      if (!ME) return null;
-      for (const g of ['m', 'w']) {
-        if (ME.g && ME.g !== g) continue;
-        const i = active(g).ids.indexOf(ME.id);
-        if (i >= 0) return { g, i };
-      }
-      return null;
-    }
-
-    // All of one player's matches, in queue order
-    function playerRows(g, i) {
-      const A = active(g), st = courtPlan(), rows = [];
-      SCHED[g].forEach((m, n) => {
-        const inT1 = m.t1.includes(i), inT2 = m.t2.includes(i);
-        if (!inT1 && !inT2) return;
-        const mine = inT1 ? m.t1 : m.t2, theirs = inT1 ? m.t2 : m.t1;
-        const key = qkey(g, n), sc = matchScores[key], scored = hasScore(sc);
-        let res = null;
-        if (scored) { const a = parseInt(sc.s1) || 0, b = parseInt(sc.s2) || 0; const my = inT1 ? a : b, op = inT1 ? b : a; res = { win: my > op, tie: my === op, my, op }; }
-        const ahead = SCHED[g].slice(0, n).filter((_, k) => !isScored(g, k)).length;
-        rows.push({ n, tie: isTieScore(sc), tieScore: sc ? sc.s1 : '', fill: !!(m.f && m.f.includes(i)), partner: mine.filter(x => x !== i).map(x => A.names[x]), opps: theirs.map(x => A.names[x]), scored, res, ahead, state: scored ? 'done' : (st[key] ? st[key].state : 'queued') });
-      });
-      return rows;
-    }
-
-    function meSummary() {
-      const me = meIndex();
-      if (!me) return '';
-      const A = active(me.g), row = playerRows(me.g, me.i).find(x => !x.scored);
-      if (!row) return `⭐ ${esc(A.names[me.i])} — all your matches are done`;
-      const tag = row.state === 'now' ? 'NOW' : row.state === 'next' ? 'UP NEXT' : `${row.ahead} match${row.ahead === 1 ? '' : 'es'} ahead`;
-      return `⭐ ${esc(A.names[me.i])} · ${tag} (Match #${row.n + 1}): with ${esc(row.partner.join(' & '))} vs ${esc(row.opps.join(' & '))}`;
-    }
-
-    function openPlayerCard(g, i) {
-      const A = active(g), name = A.names[i];
-      if (name === undefined) return;
-      const rows = playerRows(g, i);
-      const stats = calculateStats(A.names, g), rank = stats.findIndex(s => s.idx === i) + 1, st = stats[rank - 1];
-      const upcoming = rows.find(x => !x.scored);
-      const isMe = !!(ME && ME.id === A.ids[i]);
-      const nextBox = upcoming ? `<div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 space-y-1">
-          <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">${upcoming.state === 'now' ? '🔴 Happening now' : upcoming.state === 'next' ? '▶ Up next' : `▶ ${upcoming.ahead} match${upcoming.ahead === 1 ? '' : 'es'} ahead`} · Match #${upcoming.n + 1}</div>
-          <div class="text-sm text-white font-semibold">Partner: ${esc(upcoming.partner.join(' & '))}<br><span class="text-slate-300 font-normal">vs ${esc(upcoming.opps.join(' & '))}</span></div>
-        </div>` : `<div class="bg-slate-900/70 border border-slate-700 rounded-xl p-3 text-sm text-slate-300">🎉 No more group matches for ${esc(name)}.</div>`;
-      const list = rows.map(row => {
-        const badge = row.state === 'now' ? '<span class="px-1.5 rounded bg-rose-500 text-white text-[9px] font-bold">LIVE</span>' : row.state === 'next' ? '<span class="px-1.5 rounded bg-amber-500 text-slate-950 text-[9px] font-bold">NEXT</span>' : '';
-        const result = row.tie ? `<span class="font-mono text-xs font-bold text-amber-300">⚠ tied ${row.tieScore}–${row.tieScore}</span>` : row.scored ? `<span class="font-mono text-xs font-bold ${row.res.win ? 'text-emerald-400' : row.res.tie ? 'text-slate-400' : 'text-rose-400'}">${row.res.win ? 'W' : row.res.tie ? 'T' : 'L'} ${row.res.my}–${row.res.op}</span>` : '';
-        return `<div class="flex items-start gap-2 py-2 border-b border-slate-700/40 ${row.state === 'now' ? 'bg-rose-500/10 -mx-2 px-2 rounded' : ''}">
-          <div class="w-8 text-xs font-bold text-slate-400 pt-0.5">#${row.n + 1}</div>
-          <div class="flex-1 text-sm text-white">${row.fill ? `<button type="button" onclick="showFillInfo('${g}', ${i})" class="text-[9px] px-1 rounded font-bold underline decoration-dotted cursor-pointer bg-violet-500/25 text-violet-300 mr-1">FILL-IN · not counted</button>` : ''}<span class="text-slate-400">with</span> <b>${esc(row.partner.join(' & '))}</b> <span class="text-slate-400">vs</span> ${esc(row.opps.join(' & '))}</div>
-          <div class="flex flex-col items-end gap-1">${badge}${result}</div></div>`;
-      }).join('');
-      document.getElementById('player-card').innerHTML = `
-        <div class="flex items-start justify-between gap-3">
-          <div><div class="text-xl font-extrabold text-white">${esc(name)}${skillTag(A.skills[i])}</div>
-            <div class="text-xs text-slate-400 mt-0.5">${g === 'm' ? "Men's" : "Women's"} group · #${rank} · ${st.wins}-${st.losses} · ${st.diff > 0 ? '+' : ''}${st.diff} pts diff</div></div>
-          <button onclick="closePlayerCard()" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold flex-shrink-0">✕</button>
-        </div>
-        ${nextBox}
-        <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">All matches (${rows.length})</div>${list || '<p class="text-xs text-slate-500">No schedule yet.</p>'}</div>
-        <button onclick="toggleMe('${g}', '${A.ids[i]}')" class="w-full py-2.5 rounded-xl text-xs font-bold ${isMe ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 hover:bg-slate-600 text-white'}">${isMe ? '⭐ This is me (tap to undo)' : '⭐ This is me — highlight my games'}</button>`;
-      document.getElementById('player-modal').classList.remove('hidden');
-    }
-    function closePlayerCard() { document.getElementById('player-modal').classList.add('hidden'); }
-    function toggleMe(g, id) {
-      const same = ME && ME.id === id;
-      ME = same ? null : { g, id };
-      try { localStorage.setItem('pb_me', JSON.stringify(same ? { off: true } : ME)); } catch (e) {}
-      closePlayerCard();
-      renderStandings(); renderMatches(); renderLiveStrip();
-      showToast(same ? 'Cleared' : '⭐ Got it — your games are highlighted');
-    }
-
-    // ---------- matches ----------
-    function renderMatches() {
-      const st = courtPlan(), me = meIndex();
-      renderBoard(st);
-      const CL = courtLists(), courtOf = {};
-      [1, 2].forEach(c => CL[c].forEach(e => { courtOf[qkey(e.g, e.i)] = c; }));
-      let html = '';
-      if (currentMode === 'scorekeeper' && scheduleStale()) html += `<div class="lg:col-span-2 bg-rose-500/10 border border-rose-500/40 rounded-xl p-3 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <span class="text-rose-200 font-semibold">${rosterChanged() ? '⚠️ Players were added or removed. The matches below still use the previous roster — generate a new schedule to include the changes.' : '⚠️ This schedule was not balanced for the current skill levels, so matches may be unfair.'}</span>
-        <button onclick="switchTab('names')" class="px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs rounded-lg transition flex-shrink-0">Go to Players &amp; Skills → Generate</button>
-      </div>`;
-      [['m', "👨 Men's matches", 'text-sky-400'], ['w', "👩 Women's matches", 'text-pink-400']].forEach(([g, title, cls]) => {
-        const A = active(g), list = SCHED[g], done = list.filter((_, i) => isScored(g, i)).length;
-        html += `<div class="space-y-3"><div class="flex items-center justify-between"><h3 class="text-base font-bold ${cls}">${title}</h3><span class="text-xs text-slate-400">${done}/${list.length} played</span></div>`;
-        if (!list.length) html += `<p class="text-xs text-slate-500">No matches scheduled.</p>`;
-        orderOf(g).forEach((i, pos) => {
-          const m = list[i], key = qkey(g, i), sc = matchScores[key] || { s1: '', s2: '' }, p = st[key];
-          const team = t => t.map(x => `${nameBtn(g, x)}${skillTag(A.skills[x])}${m.f && m.f.includes(x) ? `<button type="button" onclick="showFillInfo('${g}', ${x})" title="Tap to see why" class="ml-1 text-[9px] px-1 rounded font-bold underline decoration-dotted cursor-pointer hover:brightness-125 bg-violet-500/25 text-violet-300">FILL-IN</button>` : ''}`).join(' &amp; ');
-          const str = t => t.reduce((a, x) => a + (A.skills[x] || 3), 0);
-          const mine = !!(me && me.g === g && (m.t1.includes(me.i) || m.t2.includes(me.i)));
-          const status = isTieScore(matchScores[key]) ? '⚠ Tied score — needs a winner' : isScored(g, i) ? '✓ Done' : !p ? `Queued · Court ${courtOf[key]}` : `${p.state === 'now' ? '🔴 NOW' : '⏭ NEXT'}${p.court ? ' · Court ' + p.court : ''}`;
-          const nowOn = p && p.state === 'next' ? Object.values(st).find(e => e.state === 'now' && e.g === g && e.court === p.court) : null;
-          const back = nowOn ? [...m.t1, ...m.t2].filter(x => [...SCHED[g][nowOn.i].t1, ...SCHED[g][nowOn.i].t2].includes(x)).map(x => A.names[x]) : [];
-          const label = `${GL(g)} #${i + 1} · ${status}${pos !== i ? ' · ↪ moved' : ''}${back.length ? ` · ⚠ ${esc(back.join(', '))} plays back-to-back` : ''}${currentMode === 'scorekeeper' ? ` · ⚖️ ${str(m.t1)} vs ${str(m.t2)}` : ''}`;
-          const skip = currentMode === 'scorekeeper' && p && !isScored(g, i) ? `<button onclick="skipMatch('${g}', ${i})" title="Move this match after the next one" class="px-2 py-1 text-[10px] font-bold rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-100 whitespace-nowrap">⏭ Skip once</button>` : '';
-          html += createMatchCard(label, team(m.t1), team(m.t2), key, sc.s1, sc.s2, mine, p && !isScored(g, i) ? p.state : '', skip);
-        });
-        html += `</div>`;
-      });
-      document.getElementById('matches-container').innerHTML = html;
-    }
-
-    function createMatchCard(label, t1, t2, key, s1, s2, mine, state, action) {
-      const ro = currentMode === 'spectator';
-      const inp = (id, v) => `<input type="number" inputmode="numeric" id="${id}" min="0" max="7" value="${v ?? ''}" ${ro ? 'disabled' : ''} oninput="clampScore(this, 7); queueSave('${id.replace(/_s[12]$/, '')}', false)" class="w-12 h-10 text-center bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-80" placeholder="0">`;
-      const ring = state === 'now' ? 'border-rose-500/60' : state === 'next' ? 'border-amber-500/50' : 'border-slate-700/80';
-      return `
-        <div class="bg-slate-800/80 border ${ring} rounded-xl p-4 space-y-3 shadow-md ${mine ? 'ring-2 ring-emerald-400/70' : ''}">
-          <div class="flex items-start justify-between gap-2"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${label}${mine ? ' · <span class="text-emerald-300">your game</span>' : ''}</div>${action || ''}</div>
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex-1 text-xs sm:text-sm font-bold text-white">${t1}</div>
-            ${inp(key + '_s1', s1)}
-            <span class="text-xs text-slate-500 font-bold">VS</span>
-            ${inp(key + '_s2', s2)}
-            <div class="flex-1 text-xs sm:text-sm font-bold text-white text-right">${t2}</div>
-          </div>
-        </div>`;
-    }
-
-    // Skip once: the match swaps places with the next unplayed match in its group, so that one plays first
-    async function skipMatch(g, i) {
-      if (currentMode !== 'scorekeeper' || isScored(g, i)) return;
-      const ord = orderOf(g).slice(), pos = ord.indexOf(i);
-      let nx = -1;
-      for (let k = pos + 1; k < ord.length; k++) { if (!isScored(g, ord[k])) { nx = k; break; } }
-      if (nx < 0) { showToast('There is no later match to play first', true); return; }
-      const other = ord[nx];
-      ord.splice(pos, 1); ord.splice(nx, 0, i);
-      ORDER[g] = ord;
-      const ok = await putNode('order', ORDER);
-      renderMatches(); renderLiveStrip();
-      showToast(ok ? `⏭ ${GL(g)} #${other + 1} plays first, then #${i + 1}` : 'Save failed — check connection', !ok);
-    }
-
-    // keep a score box within 0..max while typing
-    function clampScore(el, max) {
-      if (el.value === '') return;
-      const n = parseInt(el.value, 10);
-      if (isNaN(n) || n < 0) el.value = ''; else if (n > max) el.value = String(max);
-    }
-
-    const saveTimers = {};
-    function queueSave(key, isPlayoff) {
-      clearTimeout(saveTimers[key]);
-      saveTimers[key] = setTimeout(async () => {
-        const v1 = document.getElementById(key + '_s1').value;
-        const v2 = document.getElementById(key + '_s2').value;
-        const ok = await writeScore(key, v1, v2);
-        renderStandings(); renderLiveStrip(); renderBoard();
-        if (isPlayoff) updateMedalTeams();
-        else {
-          renderPlayoffs();
-          // refresh NOW/NEXT badges unless the scorekeeper is still typing in a box
-          if (!document.activeElement || document.activeElement.tagName !== 'INPUT') renderMatches();
-        }
-        const a = parseInt(v1), b = parseInt(v2);
-        const bad = !isPlayoff && v1 !== '' && v2 !== '' && !(Math.max(a, b) === 7 && a !== b);
-        showToast(!ok ? 'Save failed — check connection' : bad ? 'Saved — but group games are first to 7, no deuce: the winner needs exactly 7' : '✓ Saved', !ok || bad);
-      }, 700);
-    }
-
-    function showToast(msg, isError) {
-      const t = document.getElementById('toast');
-      t.innerText = msg;
-      t.className = 'fixed top-16 right-4 z-50 px-4 py-2 rounded-xl font-bold text-xs shadow-xl ' + (isError ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-slate-950');
-      setTimeout(() => t.classList.add('hidden'), 2600);
-    }
-
-    // ---------- playoffs ----------
-    function playoffTeams() {
-      const mTop = calculateStats(active('m').names, 'm').slice(0, 4);
-      const wTop = calculateStats(active('w').names, 'w').slice(0, 4);
-      const p = i => `${esc(mTop[i].name)} &amp; ${esc(wTop[i].name)}`;
-      const semi = (key, a, b) => {
-        const sc = matchScores[key];
-        if (!hasScore(sc)) return null;
-        const x = parseInt(sc.s1), y = parseInt(sc.s2);
-        if (isNaN(x) || isNaN(y) || x === y) return null;
-        return x > y ? { w: a, l: b } : { w: b, l: a };
-      };
-      const s1 = semi('playoff_semi1', p(0), p(3));
-      const s2 = semi('playoff_semi2', p(1), p(2));
-      return {
-        s1a: `Seed #1: ${p(0)}`, s1b: `Seed #4: ${p(3)}`,
-        s2a: `Seed #2: ${p(1)}`, s2b: `Seed #3: ${p(2)}`,
-        goldA: s1 ? s1.w : 'Winner Semi 1', goldB: s2 ? s2.w : 'Winner Semi 2',
-        bronzeA: s1 ? s1.l : 'Loser Semi 1', bronzeB: s2 ? s2.l : 'Loser Semi 2'
-      };
-    }
-
-    function updateMedalTeams() {
-      const t = playoffTeams();
-      const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
-      set('gold_a', t.goldA); set('gold_b', t.goldB);
-      set('bronze_a', t.bronzeA); set('bronze_b', t.bronzeB);
-    }
-
-    function renderPlayoffs() {
-      const t = playoffTeams();
-      const ui = (id, a, b, key, ids) => {
-        const sc = matchScores[key] || {s1: '', s2: ''};
-        const ro = currentMode === 'spectator';
-        const row = (team, f, v, spanId) => `<div class="flex items-center justify-between text-xs font-bold gap-2"><span ${spanId ? `id="${spanId}"` : ''} class="text-white">${team}</span>
-          <input type="number" inputmode="numeric" id="${key}_${f}" min="0" max="25" value="${v ?? ''}" ${ro ? 'disabled' : ''} oninput="queueSave('${key}', true)" class="w-10 h-8 text-center bg-slate-900 border border-slate-700 rounded text-emerald-400 font-mono text-sm disabled:opacity-80" placeholder="0"></div>`;
-        document.getElementById(id).innerHTML = `<div class="space-y-2">${row(a, 's1', sc.s1, ids && ids[0])}${row(b, 's2', sc.s2, ids && ids[1])}</div>`;
-      };
-
-      ui('semi1-teams', t.s1a, t.s1b, 'playoff_semi1');
-      ui('semi2-teams', t.s2a, t.s2b, 'playoff_semi2');
-      ui('gold-teams', t.goldA, t.goldB, 'playoff_gold', ['gold_a', 'gold_b']);
-      ui('bronze-teams', t.bronzeA, t.bronzeB, 'playoff_bronze', ['bronze_a', 'bronze_b']);
-    }
-
-    // ---------- backup / export ----------
-    function downloadFile(filename, text, mime) {
-      const blob = new Blob([text], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-    const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
-    const unesc = h => String(h).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-
-    function buildBackup() {
-      const grp = g => { const L = live(g); return L.ids.map((id, i) => ({ id, name: L.names[i], skill: L.skills[i] })); };
-      return {
-        app: 'pickleball-tourna', version: 6, exportedAt: new Date().toISOString(),
-        names: { men: grp('m'), women: grp('w') },
-        schedule: (SNAP && hasSchedule()) ? { m: SCHED.m, w: SCHED.w, snap: SNAP } : null,
-        scores: matchScores, tiebreaks: TIEBREAKS, draws: DRAWS, order: ORDER
-      };
-    }
-    function downloadBackup(quiet) {
-      downloadFile(`pickleball-backup-${stamp()}.json`, JSON.stringify(buildBackup(), null, 2), 'application/json');
-      if (!quiet) showToast('✓ Backup downloaded');
-    }
-
-    function downloadResultsCsv() {
-      const q = v => `"${String(v).replace(/"/g, '""')}"`;
-      const rows = [['Match #', 'Group', 'Team 1', 'Team 2', 'Score 1', 'Score 2', 'Winner']];
-      const winner = (a, b, t1, t2) => (a === '' || b === '' || a == null || b == null) ? '' : (+a > +b ? t1 : +b > +a ? t2 : 'Tie');
-      ['m', 'w'].forEach(g => {
-        const A = active(g), t = x => x.map(i => A.names[i]).join(' & ');
-        SCHED[g].forEach((m, i) => {
-          const sc = matchScores[qkey(g, i)] || {};
-          rows.push([i + 1, g === 'm' ? 'Men' : 'Women', t(m.t1), t(m.t2), sc.s1 ?? '', sc.s2 ?? '', winner(sc.s1, sc.s2, t(m.t1), t(m.t2))]);
-        });
-      });
-      const pt = playoffTeams();
-      [['Semi 1', 'playoff_semi1', pt.s1a, pt.s1b], ['Semi 2', 'playoff_semi2', pt.s2a, pt.s2b], ['Gold', 'playoff_gold', pt.goldA, pt.goldB], ['Bronze', 'playoff_bronze', pt.bronzeA, pt.bronzeB]].forEach(([label, key, a, b]) => {
-        const sc = matchScores[key] || {};
-        rows.push(['Playoffs', label, unesc(a), unesc(b), sc.s1 ?? '', sc.s2 ?? '', winner(sc.s1, sc.s2, unesc(a), unesc(b))]);
-      });
-      downloadFile(`pickleball-results-${stamp()}.csv`, '\uFEFF' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
-      showToast('✓ Results downloaded');
-    }
-
-    async function handleRestoreFile(file) {
-      if (!file || currentMode !== 'scorekeeper') return;
-      let d;
-      try { d = JSON.parse(await file.text()); } catch (e) { showToast('That file is not a valid backup', true); return; }
-      const okGroup = x => Array.isArray(x) && x.length >= MIN_PLAYERS && x.length <= MAX_PLAYERS && x.every(p => p && typeof p === 'object');
-      if (!d || d.app !== 'pickleball-tourna' || !d.names || !okGroup(d.names.men) || !okGroup(d.names.women) || typeof d.scores !== 'object' || d.scores === null) { showToast('That is not a Pickleball backup file', true); return; }
-      const when = d.exportedAt ? new Date(d.exportedAt).toLocaleString() : 'unknown time';
-      if (!confirm(`Restore the backup from ${when}?\n\nThis REPLACES all current players, the schedule and all scores.\n(Backups made before the court-queue update have no usable schedule — generate a new one afterwards.)`)) return;
-      generating = true;
-      try {
-        const clean = {};
-        Object.keys(d.scores).forEach(k => { const v = d.scores[k]; if (/^([mw]_q\d+|playoff_(semi1|semi2|gold|bronze))$/.test(k) && v && typeof v === 'object') clean[k] = { s1: String(v.s1 ?? ''), s2: String(v.s2 ?? '') }; });
-        applyNames(d.names);
-        applySchedule(d.schedule || null);
-        if (!hasSchedule()) Object.keys(clean).forEach(k => { if (/^[mw]_q/.test(k)) delete clean[k]; });
-        matchScores = clean;
-        TIEBREAKS = (d.tiebreaks && typeof d.tiebreaks === 'object') ? d.tiebreaks : {};
-        DRAWS = (d.draws && typeof d.draws === 'object') ? d.draws : {};
-        ORDER = (d.order && typeof d.order === 'object') ? { m: d.order.m || [], w: d.order.w || [] } : { m: [], w: [] };
-        undoStack = []; Object.keys(unsynced).forEach(k => delete unsynced[k]);
-        const schedOut = hasSchedule() ? { m: SCHED.m, w: SCHED.w, snap: SNAP } : null;
-        let ok = true, err = '';
-        if (!CLOUD) {
-          localStorage.setItem('pb_scores_v2', JSON.stringify(clean));
-          localStorage.setItem('pb_schedule', JSON.stringify(schedOut));
-          localStorage.setItem('pb_tiebreaks', JSON.stringify(TIEBREAKS)); localStorage.setItem('pb_draws', JSON.stringify(DRAWS)); localStorage.setItem('pb_order', JSON.stringify(ORDER));
-          await writeNames();
-        } else {
-          try {
-            const put = async (p, v) => { const r = await fb(p, 'PUT', JSON.stringify(v)); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); };
-            if (!(await writeNames())) throw new Error('players not saved');
-            await put('schedule', schedOut);
-            await put('scores_v2', Object.keys(clean).length ? clean : null);
-            await put('tiebreaks', Object.keys(TIEBREAKS).length ? TIEBREAKS : null);
-            await put('draws', Object.keys(DRAWS).length ? DRAWS : null);
-            await put('order', (ORDER.m.length || ORDER.w.length) ? ORDER : null);
-          } catch (e) { ok = false; err = e.message; setSync(false, err); }
-        }
-        updateUndoUI(); updateUnsyncedUI();
-        refreshAll(); renderNamesEditor();
-        showToast(ok ? '✓ Backup restored' : `Restore failed (${err})`, !ok);
-      } finally { generating = false; }
-    }
-
-    // ---------- QR ----------
-    let qrMode = 'spectator';
-    const qrUrl = mode => baseUrl() + (mode === 'checkin' ? '?checkin=1' : '');
-    function openQRModal(mode) {
-      showQR(mode === 'checkin' && currentMode === 'scorekeeper' ? 'checkin' : 'spectator');
-      document.getElementById('qr-modal').classList.remove('hidden');
-    }
-    function showQR(mode) {
-      qrMode = mode;
-      const c = document.getElementById('qrcode-container');
-      c.innerHTML = '';
-      new QRCode(c, { text: qrUrl(mode), width: 160, height: 160, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-      document.getElementById('qr-title').innerText = mode === 'checkin' ? 'Scan to Check In' : 'Scan for Live Standings';
-      document.getElementById('qr-desc').innerText = mode === 'checkin'
-        ? 'Players scan this, enter their name and level, and are taken to the live scoreboard.'
-        : 'Scan this code with any phone camera to view the live scoreboard in Spectator Mode.';
-      document.getElementById('qr-url').innerText = qrUrl(mode);
-      const tabs = document.getElementById('qr-tabs');
-      tabs.classList.toggle('hidden', currentMode !== 'scorekeeper');
-      const style = (id, on) => { document.getElementById(id).className = 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (on ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-300'); };
-      style('qr-tab-spectator', mode === 'spectator'); style('qr-tab-checkin', mode === 'checkin');
-    }
-    function closeQRModal() { document.getElementById('qr-modal').classList.add('hidden'); }
-    function copyShareLink() {
-      navigator.clipboard.writeText(qrUrl(qrMode));
-      showToast('Link copied!');
-    }
-
-    window.onload = IS_CHECKIN ? initCheckin : initApp;
-  </script>
-</body>
-</html>
+      const ids = p.members.map(s => A.ids[s.idx]), matches = tbMatches(ids);
