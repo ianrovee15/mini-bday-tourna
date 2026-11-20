@@ -263,6 +263,9 @@
   </div>
 
   <script>
+    // Shows any script error on screen (handy on phones, where there is no console)
+    window.addEventListener('error', e => { const b = document.getElementById('offline-banner'); if (b) { b.classList.remove('hidden'); b.innerText = '⚠️ App error: ' + (e.message || 'unknown') + (e.lineno ? ' (line ' + e.lineno + ')' : ''); } });
+    window.addEventListener('unhandledrejection', e => { const b = document.getElementById('offline-banner'); if (b) { b.classList.remove('hidden'); b.innerText = '⚠️ App error: ' + ((e.reason && e.reason.message) || e.reason || 'unknown'); } });
     // ============================================================
     // CLOUD SYNC SETUP — paste your Firebase Realtime Database URL
     // between the quotes. (no trailing slash). Leave empty to run
@@ -1431,14 +1434,4 @@
           ${t.matches.map((m, n) => `<div class="flex items-center justify-between gap-2 text-xs font-bold text-white">
             <span class="flex-1">${m.t1.map(nm).join(' &amp; ')}</span>${inp(n, 's1', m.s1)}<span class="text-slate-500">VS</span>${inp(n, 's2', m.s2)}<span class="flex-1 text-right">${m.t2.map(nm).join(' &amp; ')}</span></div>`).join('')}
           <div class="text-[11px] text-slate-300 border-t border-slate-700 pt-2">${t.ids.map(i => `<b class="text-white">${nm(i)}</b> ${tally[i].n ? `${tally[i].w}W · ${tally[i].d > 0 ? '+' : ''}${tally[i].d}` : '—'}`).join(' &nbsp;·&nbsp; ')}</div>
-          ${sk ? `<button onclick="removeTiebreaks('${key}')" class="text-[11px] font-bold text-rose-300 hover:text-rose-200">🗑️ Remove tiebreaker games</button>` : ''}</div>`;
-      });
-      el.innerHTML = html;
-      el.classList.toggle('hidden', !html);
-    }
-
-    async function createTiebreak(g, key) {
-      if (currentMode !== 'scorekeeper') return;
-      const A = active(g), p = (calculateStats(A.names, g).pending || []).find(x => x.key === key);
-      if (!p || !p.canTb) { showToast('That tie is already settled', true); return; }
-      const ids = p.members.map(s => A.ids[s.idx]), matches = tbMatches(ids);
+          ${sk ? `<button onclick="removeTi
